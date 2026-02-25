@@ -47,22 +47,7 @@ Every project follows a **pyramid testing strategy**: many fast unit tests at th
 
 ### Evidence
 
-> 📸 **Add your screenshot here**: Run `npm test` in the BrightPath repo and capture the terminal output showing all tests passing. Save it as:
-
-```
-Test-Evidence/brightpath-vitest-passing.png
-```
-
-**Expected output format:**
-
-```
-✓ src/tests/... (XX tests)
-✓ src/tests/... (XX tests)
-...
-Test Files  XX passed
-Tests       XX passed
-Duration    X.XXs
-```
+![BrightPath Vitest — 103 test files, 1236 tests passing](./brightpath-vitest-passing.png)
 
 ---
 
@@ -91,11 +76,7 @@ npx tsx scripts/verify-db-integrity.ts
 
 ### Evidence
 
-> 📸 **Add your screenshot here**: Run the smoke check and capture the terminal output. Save it as:
-
-```
-Test-Evidence/lumiere-smoke-check.png
-```
+![Lumière Unit Tests — 5 passed, 0 failed](./lumiere-smoke-check.png)
 
 ---
 
@@ -148,27 +129,7 @@ cd apps/mobile_flutter && flutter analyze
 
 ### Evidence
 
-> 📸 **Add your screenshot here**: Run `flutter test` from each package directory and capture the terminal output. Save it as:
-
-```
-Test-Evidence/lightroutines-flutter-test.png
-```
-
-**Expected output format:**
-
-```
-00:0X +278: All tests passed!
-```
-
----
-
-## How to Add Screenshots
-
-1. Run the test commands listed above in each project's directory
-2. Capture a screenshot of the passing terminal output
-3. **Blur or replace** any data that could identify the client (use dummy data if needed)
-4. Save the screenshots in this folder with the filenames specified above
-5. Update this README to embed them using: `![Description](./filename.png)`
+![Light Routines Flutter Test — 278 tests all passing](./lightroutines-flutter-test.png)
 
 ---
 

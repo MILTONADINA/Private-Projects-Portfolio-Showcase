@@ -292,7 +292,7 @@ Multi-provider payment orchestration via Supabase Edge Functions:
 | `deploy-staging.yml`    | Push to develop | Staging deployment              |
 | `deploy-production.yml` | Push to main    | Production deployment           |
 
-> 📸 **[Screenshot Placeholder]**: Place a screenshot of `npm test` terminal output here as `../Test-Evidence/brightpath-vitest-passing.png`
+![BrightPath Vitest — 103 test files, 1236 tests passing](../Test-Evidence/brightpath-vitest-passing.png)
 
 ---
 

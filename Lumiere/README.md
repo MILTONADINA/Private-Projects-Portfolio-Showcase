@@ -381,7 +381,7 @@ This enables content rollback and change tracking without a full revision system
 
 ## Validation
 
-> 📸 **[Screenshot Placeholder]**: Place a screenshot of the system smoke check passing as `../Test-Evidence/lumiere-smoke-check.png`
+![Lumière Unit Tests — 5 passed, 0 failed](../Test-Evidence/lumiere-smoke-check.png)
 
 ---
 

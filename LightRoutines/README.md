@@ -278,7 +278,7 @@ All messages use a common envelope: `protocol_version`, `type`, `msg_id` (monoto
 | **Build Android APK** | Java 17 → `flutter build apk --debug` → upload artifact              |
 | **Build iOS**         | `pod install` → `flutter build ios --no-codesign --simulator`        |
 
-> 📸 **[Screenshot Placeholder]**: Place a screenshot of `flutter test` terminal output (all 278+ tests passing) as `../Test-Evidence/lightroutines-flutter-test.png`
+![Light Routines Flutter Test — 278 tests all passing](../Test-Evidence/lightroutines-flutter-test.png)
 
 ---
 
