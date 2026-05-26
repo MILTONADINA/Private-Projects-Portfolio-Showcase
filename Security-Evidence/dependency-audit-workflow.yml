@@ -1,0 +1,80 @@
+# Dependency-audit workflow — sanitized excerpt
+# Source: private repo (Flourish).
+#
+# Replaces the GHAS-gated dependency-review workflow per decision log D-019.
+# Two-layer coverage:
+#
+#   Layer A — pnpm audit: GitHub advisory CVE check against the prod lockfile
+#   Layer B — Trivy fs:   lockfile-driven CVE + license scan, broader DB
+#
+# Together they exceed the coverage the GHAS dependency-review-action provided
+# without the $49/committer/month subscription. Revisit at Phase 6.
+#
+# Boundary note: secret scanning is NOT done here — that's gitleaks's job
+# (see gitleaks-config.yml). Trivy is configured with --scanners vuln,license.
+
+name: Dependency audit
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Weekly run, Monday 09:00 UTC — mirrors Semgrep cadence.
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-audit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24'
+  PNPM_VERSION: '10.32.1'
+
+jobs:
+  pnpm-audit:
+    name: pnpm audit (production deps, high)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+
+      # `--prod` rationale (D-019): dev-only deps (build tools, linters, test
+      # runners) churn frequently and represent a different threat model —
+      # exploiting them requires attacker code-execution on a developer
+      # machine. Production deployment surface is the actual exploit boundary
+      # at MVP. Phase 6 hardening will re-evaluate (KMS keys on developer
+      # machines change the risk calculus and may justify --include=dev).
+      #
+      # Transitive moderates surface via Dependabot (parent-package updates
+      # carry the patched transitive forward), not as a CI fail.
+      #
+      # `--audit-level=high` matches the Trivy --severity HIGH,CRITICAL gate.
+      - name: pnpm audit (prod, high+critical)
+        run: pnpm audit --prod --audit-level=high
+
+  trivy-fs:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v0
+        with:
+          scan-type: 'fs'
+          scanners: 'vuln,license'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          exit-code: '1'
+          format: 'table'

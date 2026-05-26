@@ -1,0 +1,97 @@
+# Semgrep SAST workflow — sanitized excerpt
+# Source: private repo (Flourish). Repo-specific paths preserved as evidence
+# of the decision log linkage; reproducing this workflow requires the source
+# repo's .semgrep/ ruleset, which is not included here.
+
+name: Semgrep
+
+# Replaces the GHAS-gated CodeQL workflow per decision log D-019:
+# Semgrep OSS rulesets cover the same ground as CodeQL on the JS/TS surface
+# (security audit + OWASP Top 10 + Node.js + secrets) without requiring the
+# $49/committer/month GitHub Advanced Security subscription. Revisit at
+# Phase 6 pre-launch hardening.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Weekly run, Monday 09:00 UTC.
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel in-progress runs on the same ref when a new commit lands.
+concurrency:
+  group: semgrep-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    name: Semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      # Pinned tag rather than `latest`. Dependabot's grouped GHA updates
+      # roll forward on a controlled cadence.
+      image: semgrep/semgrep:1.161.0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Rulesets cover what CodeQL did on JS/TS, plus Node-specific patterns
+      # and a secrets sweep (defense-in-depth alongside gitleaks):
+      #   p/typescript        — TS-specific code-quality + correctness
+      #   p/javascript        — JS-specific code-quality + correctness
+      #   p/security-audit    — generic security antipatterns
+      #   p/owasp-top-ten     — OWASP Top 10 web app risks
+      #   p/secrets           — hardcoded credential detection
+      #   p/nodejs            — Node-specific security patterns
+      #   .semgrep/*.yml      — project-specific rules (e.g., disclaimer
+      #                         language verbatim enforcement for FDA
+      #                         SaMD-avoidance posture)
+      - name: Run Semgrep — fail on ERROR, capture WARNINGs into SARIF
+        run: |
+          set -e
+          # First pass: collect every ERROR + WARNING finding into a SARIF
+          # artifact. --no-error so this pass never fails the job.
+          semgrep scan \
+            --config=p/typescript \
+            --config=p/javascript \
+            --config=p/security-audit \
+            --config=p/owasp-top-ten \
+            --config=p/secrets \
+            --config=p/nodejs \
+            --config=.semgrep/disclaimer-verbatim.yml \
+            --severity=ERROR --severity=WARNING \
+            --metrics=off \
+            --no-error \
+            --sarif --output=semgrep-results.sarif \
+            .
+
+          # Second pass: gate the job. ERROR-severity only; WARNINGS are
+          # visible in the SARIF artifact but do not fail the job.
+          semgrep scan \
+            --config=p/typescript \
+            --config=p/javascript \
+            --config=p/security-audit \
+            --config=p/owasp-top-ten \
+            --config=p/secrets \
+            --config=p/nodejs \
+            --config=.semgrep/disclaimer-verbatim.yml \
+            --severity=ERROR \
+            --error \
+            --metrics=off \
+            --quiet \
+            .
+
+      - name: Upload SARIF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results-sarif
+          path: semgrep-results.sarif
+          retention-days: 30

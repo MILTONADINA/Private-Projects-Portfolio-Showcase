@@ -1,6 +1,6 @@
 <div align="center">
 
-# BrightPath / SchoolHub Africa
+# BrightPath
 
 **Enterprise Multi-Tenant School Management System**
 
@@ -9,6 +9,19 @@
 [![Testing](https://img.shields.io/badge/Vitest-Playwright-6E9F18?style=flat-square&logo=vitest)](https://vitest.dev)
 
 </div>
+
+---
+
+## Ecosystem
+
+BrightPath is the SaaS core. Two focused, **offline-first** companion modules ship alongside it for use cases the cloud architecture intentionally cannot serve:
+
+| Module                                | Purpose                                                                        | Stack                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------- |
+| [**SchoolGrid**](./SchoolGrid)        | Timetable generator with localStorage-only persistence. Static-host or laptop. | React 18 · TypeScript · Vite · PWA          |
+| [**Exam Analytics**](./ExamAnalytics) | Classroom exam analytics on Windows + Android. Drift/SQLite, never cloud.      | Flutter · Dart · drift · Riverpod · bcrypt  |
+
+Each module is its own private repository with its own CI, tests, and documentation; the BrightPath ecosystem framing is about shared domain (African K-12 administration) and shared engineering vocabulary, not shared infrastructure.
 
 ---
 

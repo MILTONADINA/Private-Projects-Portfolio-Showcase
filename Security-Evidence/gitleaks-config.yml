@@ -1,0 +1,41 @@
+# gitleaks secret-scanning workflow — sanitized excerpt
+# Source: private repo (Flourish).
+
+name: Secret scan (gitleaks)
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Daily background scan, 11:00 UTC.
+    - cron: '0 11 * * *'
+
+permissions:
+  contents: read
+  # Required by gitleaks-action@v2 to read PR commits via
+  #   GET /repos/.../pulls/N/commits
+  # Without this, the action gets a 403 "Resource not accessible by
+  # integration" and fails. Discovered on first PR run; documented inline so
+  # future contributors don't repeat the diagnostic loop.
+  pull-requests: read
+
+jobs:
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so gitleaks can scan past commits, not just the
+          # latest change. Catches credentials committed and later removed
+          # without being rotated — those still need to be rotated.
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITLEAKS_LICENSE: optional; required only for org-level scanning
+          # features beyond the free tier. Not used at MVP.

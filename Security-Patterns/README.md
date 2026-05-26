@@ -10,7 +10,42 @@ _How I secure real client applications — from authentication to database-level
 
 ---
 
-> This section documents the security patterns and implementations used across all three private projects. As a Computer Science student with a **Cybersecurity specialization**, security isn't an afterthought — it's foundational to every architecture decision.
+> This section documents the security patterns and implementations used across the private projects. As a Computer Science student with a **Cybersecurity specialization**, security isn't an afterthought — it's foundational to every architecture decision.
+
+---
+
+## Tooling — in production vs. evaluated
+
+Honest framing of what's actually running in CI versus what's been used manually or evaluated for fit. Sanitized workflow excerpts for the "in production" entries live in [`../Security-Evidence/`](../Security-Evidence).
+
+### In production (gated in CI on push, PR, or scheduled cron)
+
+| Tool                       | Where it runs                                                  | What it does                                                              |
+| -------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Semgrep OSS**            | Flourish (push, PR, weekly cron)                               | SAST — OWASP Top 10, secrets, Node.js patterns, project-specific rules    |
+| **gitleaks-action@v2**     | Flourish (push, PR, daily cron)                                | Secret leakage in commits, including full history                         |
+| **pnpm audit (`--prod`)**  | Flourish (push, PR, weekly cron)                               | GitHub advisory CVEs in production dependencies                           |
+| **Trivy (fs)**             | Flourish (push, PR, weekly cron)                               | Broader CVE database + license scan                                       |
+| **CycloneDX `cdxgen`**     | Flourish (push to main when lockfile changes)                  | SBOM regeneration + commit                                                |
+| **Playwright + axe-core**  | SchoolGrid Pro (PR)                                            | WCAG 2 + 2.1 audit including color contrast                               |
+| **Playwright (CSP)**       | SchoolGrid Pro (PR)                                            | Content Security Policy regression test (print flow)                      |
+| **DOMPurify**              | BrightPath, Lumière, SchoolGrid Pro (runtime)                  | HTML sanitization at the input boundary                                   |
+| **Zod**                    | All TS projects (runtime)                                      | Schema-validated input boundaries on every API endpoint and JSON import   |
+| **bcrypt**                 | BrightPath (via Supabase), Lumière, Internet-Apps, Exam Analytics (PIN) | Password / PIN hashing                                          |
+| **JWT** (Supabase / Firebase / signed) | BrightPath, Lumière, Light Routines, Internet-Apps, Doctor Who DB | Stateless authentication                                      |
+| **PostgreSQL RLS**         | BrightPath, Lumière, Flourish                                  | Database-engine-level tenant + minor-data isolation                        |
+
+### Evaluated / ad-hoc (used manually, not committed as CI artifacts)
+
+| Tool                   | Use case                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| **OWASP ZAP** (headless) | DAST sweeps against deployed environments before release milestones                 |
+| **Burp Suite Community** | Manual exploratory testing of authentication and session flows                       |
+| **Nuclei**             | Template-driven vulnerability scanning during pre-release hardening sprints           |
+| **jwt-cli**            | Local JWT inspection, claim verification, signature validation                        |
+| **curl**               | Manual API surface probing                                                            |
+
+These tools are part of the toolkit but their output is not currently committed as CI evidence. Surfacing them in the Security-Evidence folder is on the roadmap.
 
 ---
 

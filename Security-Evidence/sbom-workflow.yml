@@ -1,0 +1,56 @@
+# Software Bill of Materials (CycloneDX) workflow — sanitized excerpt
+# Source: private repo (Flourish).
+#
+# Generates a CycloneDX SBOM and commits it under docs/07-regulatory/sbom/.
+# The SBOM is part of the regulatory artefact set (Flourish: HIPAA-ready
+# posture + FDA SaMD-avoidance documentation set).
+
+name: SBOM (CycloneDX)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - '.github/workflows/sbom.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write # commits the regenerated SBOM back to main
+
+env:
+  NODE_VERSION: '24'
+  PNPM_VERSION: '10.32.1'
+
+jobs:
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate SBOM (CycloneDX)
+        run: |
+          mkdir -p docs/07-regulatory/sbom
+          pnpm dlx @cyclonedx/cdxgen@latest \
+            -o docs/07-regulatory/sbom/sbom.cdx.json -r .
+
+      - name: Commit if changed
+        run: |
+          if [[ -n "$(git status --porcelain docs/07-regulatory/sbom)" ]]; then
+            git config user.name 'flourish-bot'
+            git config user.email 'flourish-bot@users.noreply.github.com'
+            git add docs/07-regulatory/sbom
+            git commit -m "chore(sbom): regenerate from pnpm-lock.yaml"
+            git push
+          else
+            echo "SBOM unchanged."
+          fi
