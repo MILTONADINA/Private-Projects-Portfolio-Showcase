@@ -310,6 +310,64 @@ graph LR
 
 ---
 
+## App Router Route Map
+
+```mermaid
+graph LR
+    subgraph Public["Public site — /[locale]/* (40 pages total)"]
+        P_Root["/<br/>(home — RSC)"]
+        P_About["/about"]
+        P_Services["/services"]
+        P_Portfolio["/portfolio<br/>/portfolio/[slug]"]
+        P_Packages["/packages/[slug]"]
+        P_Blog["/blog<br/>/blog/[slug]"]
+        P_Contact["/contact<br/>(client component)"]
+        P_Thanks["/thank-you<br/>/checkout/cancel"]
+    end
+
+    subgraph AdminGroup["Admin dashboard — /admin/(dashboard)/*"]
+        A_Home["/admin<br/>(dashboard home)"]
+        A_Services["/admin/services<br/>+ /services/packages"]
+        A_Portfolio["/admin/portfolio"]
+        A_Posts["/admin/posts"]
+        A_Team["/admin/branding/team"]
+        A_Logos["/admin/branding/logos"]
+        A_Test["/admin/testimonials"]
+        A_Inbox["/admin/inbox/contacts<br/>+ /inbox/orders"]
+        A_Trash["/admin/trash"]
+        A_Login["/admin/login<br/>(no layout)"]
+    end
+
+    subgraph APIPublic["Public API"]
+        API_Contact["POST /api/contact<br/>(rate-limited)"]
+        API_News["POST /api/newsletter<br/>(rate-limited)"]
+        API_Checkout["POST /api/checkout<br/>(Stripe)<br/>(rate-limited)"]
+        API_Auth["GET /api/auth/callback<br/>(Supabase)"]
+        API_Hook["POST /api/webhooks/stripe<br/>(HMAC-verified)"]
+    end
+
+    subgraph APIAdmin["Admin API — Supabase-gated"]
+        API_AdmCRUD["/api/admin/{services, posts,<br/>portfolio, team, logos,<br/>testimonials, history, trash}<br/>(CRUD)"]
+    end
+
+    Public --> APIPublic
+    AdminGroup --> APIAdmin
+    P_Checkout["/checkout"] --> API_Checkout
+    API_Checkout --> API_Hook
+
+    style Public fill:#0891b2,color:#fff
+    style AdminGroup fill:#dc2626,color:#fff
+    style APIPublic fill:#059669,color:#fff
+    style APIAdmin fill:#7c3aed,color:#fff
+```
+
+- **40 `page.tsx` files** across the public + admin trees (counted in the real source).
+- **25 `route.ts` API endpoints** — 17 admin CRUD, 8 public (auth callback, checkout, contact, newsletter, Stripe webhook, history-revert, seed, migrate).
+- Admin routes use **route groups `(dashboard)`** so they share a layout but the URL stays `/admin/<feature>`.
+- Public routes use **dynamic segment `[locale]`** for next-intl URL-based localization.
+
+---
+
 ## Internationalization (i18n)
 
 Fully bilingual (English + Swahili) implementation using `next-intl`:
