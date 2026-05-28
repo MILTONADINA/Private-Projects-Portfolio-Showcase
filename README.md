@@ -28,7 +28,7 @@ The source code for these projects is private (client work + active product deve
 | --- | ---------------------------------------- | ------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------- |
 | 1   | [**BrightPath Suite**](./BrightPath)     | SaaS School Management (+ 2 companion modules) | React 18 · TypeScript · Vite · Supabase · PostgreSQL | Multi-tenancy, RLS, RBAC, Payments — plus [SchoolGrid](./BrightPath/SchoolGrid) (offline timetabling) and [Exam Analytics](./BrightPath/ExamAnalytics) (Flutter desktop) |
 | 2   | [**Lumière Digital Agency**](./Lumiere)  | Full-Stack Agency Website       | Next.js 15 · React 19 · Prisma · Supabase · Tailwind             | Server Components, CMS, i18n                                          |
-| 3   | [**Light Routines**](./LightRoutines)    | Cross-Platform Wellness App     | Flutter · Swift · Kotlin · SQLite · BLE                          | Clean Architecture, Offline-First, Safety-Critical                    |
+| 3   | [**Light Routines**](./LightRoutines)    | Cross-Platform Flutter + Native | Flutter · Swift · Kotlin · SQLite · BLE                          | Clean Architecture, Offline-First, Dual Native Engines                |
 | 4   | [**Flourish**](./Flourish)               | Compliance-Engineered Child-Health Platform | Next.js 16 · Expo · Fastify · tRPC · Drizzle · Clerk | HIPAA-ready, FDA SaMD-avoidance, multi-jurisdiction privacy           |
 | 5   | [**DevOPs + Stratum**](./DevOPs)         | Agent Operating System + Memory Backend | TypeScript · Fastify · Cloudflare Workers · Rust/WASM        | Deterministic safety hooks, three-tier persistent memory, context pruning |
 

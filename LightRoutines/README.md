@@ -2,12 +2,12 @@
 
 # Light Routines
 
-**Cross-Platform Wellness App — Flutter + Native Engines**
+**Cross-Platform Flutter App with Native iOS/Android Session Engines**
 
 [![Stack](https://img.shields.io/badge/Flutter-Dart_3.3-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
 [![iOS](https://img.shields.io/badge/iOS-Swift-F05138?style=flat-square&logo=swift)](https://developer.apple.com/swift/)
 [![Android](https://img.shields.io/badge/Android-Kotlin-7F52FF?style=flat-square&logo=kotlin)](https://kotlinlang.org)
-[![Tests](https://img.shields.io/badge/Tests-278%2B_passing-brightgreen?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/Tests-342_passing-brightgreen?style=flat-square)](.)
 
 </div>
 
@@ -15,32 +15,29 @@
 
 ## The Problem
 
-A cross-platform mobile app needs to encode a published color protocol library (**331 color schedules covering 600+ health conditions**) and let users execute guided "tonation" sessions via their phone screen — with future support for external BLE accessories.
+A cross-platform mobile app where the **session-execution path must be reliable enough to run for hours in the background**, on both iOS and Android, with optional BLE-connected hardware accessories. Three structural constraints drive the architecture:
 
-**Key constraints:**
-
-- **Safety-critical**: Certain light frequencies (≥5 Hz flicker) carry photosensitivity risk. The architecture must enforce hardware guardrails, not rely on UI-only warnings.
-- **Offline-first**: The full protocol library must be bundled with the app. No internet required for core functionality.
-- **Future BLE accessory support**: The architecture must cleanly accommodate external devices without rewriting the domain layer. Accessories run sessions for hours while the app is backgrounded.
-- **Dual-platform native engines**: Session reliability (BLE heartbeat, background sessions, vsync-stable rendering) requires native code — Flutter alone is insufficient.
+- **Long-running background sessions**: A Flutter app suspends when backgrounded. Multi-hour session reliability needs native foreground services (Android) and CoreBluetooth state restoration (iOS) — not platform channels into Dart.
+- **Hardware abstraction without coupling**: BLE accessories are a v2 surface. The domain layer must be testable and shippable without any of the BLE code being present.
+- **Offline-first by default**: The app must function with the network unreachable. Any cloud surface (auth, sync) is opt-in and the local SQLite database is the source of truth at all times.
 
 ---
 
 ## The Solution
 
-A **Dual-Engine Mobile Architecture** (Flutter UI + Native Session Engines) organized as a multi-package monorepo with Clean Architecture principles.
+A **5-package Flutter monorepo** with native iOS/Android session engines bridged through typed MethodChannel + EventChannel contracts. Clean Architecture boundaries enforced by Dart's package system — `domain` literally cannot import Flutter or platform code, the analyzer prevents it.
 
 ### Tech Stack
 
-| Layer              | Technology                           | Rationale                                            |
-| ------------------ | ------------------------------------ | ---------------------------------------------------- |
-| **UI**             | Flutter (Dart)                       | Cross-platform UI, hot reload, widget composition    |
-| **iOS Engine**     | Swift (CoreBluetooth, CADisplayLink) | Background BLE, vsync-stable rendering, biometrics   |
-| **Android Engine** | Kotlin (BLE, Foreground Service)     | Background session reliability, notification actions |
-| **Persistence**    | SQLite (drift)                       | Offline-first, embeddable, no server dependency      |
-| **Protocol Data**  | Bundled JSON asset                   | 331 schedules, parsed at runtime, zero network       |
-| **Auth**           | Firebase Auth                        | User accounts, future cloud sync                     |
-| **CI/CD**          | GitHub Actions                       | Analyze → Test → Build (APK + iOS)                   |
+| Layer              | Technology                                            | Rationale                                                       |
+| ------------------ | ----------------------------------------------------- | --------------------------------------------------------------- |
+| **UI**             | Flutter (Dart 3.3+) — Provider for DI                 | Cross-platform UI, hot reload, single codebase                  |
+| **iOS Engine**     | Swift (CoreBluetooth, CADisplayLink)                  | Background BLE state restoration, vsync-stable rendering        |
+| **Android Engine** | Kotlin (BLE, Foreground Service, BiometricPrompt)     | Background session reliability via foreground service           |
+| **BLE Transport**  | `flutter_reactive_ble` 5.3 (in `packages/ble`)        | Reactive BLE adapter, isolated in its own package                |
+| **Persistence**    | SQLite (drift) — local source of truth                | Embeddable, no server dependency, offline-first                  |
+| **Cloud (opt-in)** | Firebase Auth + Firestore — implemented, not yet live | Auth + sync code complete; runtime currently uses mock auth     |
+| **CI/CD**          | GitHub Actions: analyze → test → build APK + iOS      | Per-package quality gates, dual-platform builds                  |
 
 ---
 
@@ -49,13 +46,13 @@ A **Dual-Engine Mobile Architecture** (Flutter UI + Native Session Engines) orga
 ```mermaid
 graph TB
     subgraph App["apps/mobile_flutter"]
-        AppShell["Application Shell<br/>21 Screens · Provider DI · Services"]
+        AppShell["Application Shell<br/>21+ Screens · Provider DI · Services"]
     end
 
     subgraph Packages["packages/"]
         UI["ui<br/>Shared Widgets · Theme<br/>OutputRouter · SafetyUI<br/>EmergencyStop · Disclaimers"]
-        Domain["domain<br/>Pure Dart — Zero Dependencies<br/>Entities · Validation · Policies<br/>Spectro Parser · Search Index"]
-        Data["data<br/>SQLite · Repositories<br/>Export Generator<br/>Cloud Sync Service"]
+        Domain["domain<br/>Pure Dart — Zero Dependencies<br/>Entities · Validation · Policies<br/>Parser · Search Index"]
+        Data["data<br/>SQLite · Repositories<br/>Export Generator<br/>Cloud Sync Service (Firestore)"]
         Bridge["bridge<br/>Flutter ↔ Native Contract<br/>MethodChannel · EventChannel<br/>Typed Payloads"]
         BLE["ble<br/>BLE Transport Adapter<br/>Device State Machine<br/>Group Coordinator"]
     end
@@ -84,7 +81,7 @@ graph TB
 
 | Package               | Depends On                 | Rationale                                                   |
 | --------------------- | -------------------------- | ----------------------------------------------------------- |
-| `domain`              | **Nothing**                | Pure Dart. Business logic is testable without Flutter SDK.  |
+| `domain`              | **Nothing**                | Pure Dart. Business logic testable without Flutter SDK.     |
 | `data`                | `domain`                   | Implements repository interfaces defined in domain.         |
 | `bridge`              | `domain`                   | Converts domain models to/from native payloads.             |
 | `ble`                 | `domain`                   | BLE adapter implements domain transport abstractions.       |
@@ -100,8 +97,8 @@ graph TB
 **Why?**
 
 - **Enforced boundaries**: Dart's package system physically prevents `domain` from importing Flutter or platform code. A developer literally cannot break the dependency rule — the analyzer catches it.
-- **Independent testing**: `domain` has 248+ tests that run without a Flutter SDK. `data` and `ble` each have their own test suites. Total: **278+ passing tests, 0 analyzer issues**.
-- **Future-proof**: When BLE accessories ship, only `ble` and the native engines change. `domain` (validation, safety policies) and `data` (persistence) remain untouched.
+- **Independent testing**: `domain` has tests that run without a Flutter SDK. `data` and `ble` each have their own test suites. Total: **342 test calls across 35 test files, 0 analyzer issues**.
+- **Future-proof**: When BLE accessory hardware ships, only `ble` and the native engines change. `domain` (validation, safety policies) and `data` (persistence) remain untouched.
 
 ---
 
@@ -112,8 +109,16 @@ graph TB
 **Why?**
 
 - **Background reliability**: A Flutter app suspends when backgrounded. BLE heartbeats (every ~5 seconds) and multi-hour accessory sessions must continue. Android Foreground Services and iOS CoreBluetooth state restoration solve this natively.
-- **Vsync-stable rendering**: Phone-screen sessions display solid colors at precise frequencies. `CADisplayLink` (iOS) and Choreographer (Android) provide frame-accurate timing that Flutter's rendering pipeline cannot guarantee for single-color full-screen modes.
+- **Vsync-stable rendering**: Phone-screen output requires frame-accurate timing for the rendering pipeline. `CADisplayLink` (iOS) and Choreographer (Android) provide frame-accurate timing that Flutter's render pipeline cannot guarantee for full-screen single-color modes.
 - **Biometric gates**: FaceID/TouchID (iOS) and BiometricPrompt (Android) are native APIs. Wrapping them through platform channels gives consistent, OS-level security.
+
+**Implementation surface** (real LOC, not scaffold):
+
+| Component                        | Language | LOC | Path                                                                 |
+| -------------------------------- | -------- | --: | -------------------------------------------------------------------- |
+| Android `DeviceEngine`           | Kotlin   | 362 | `apps/mobile_flutter/android/.../DeviceEngine.kt`                    |
+| Android `SessionService` (FGS)   | Kotlin   | 343 | `apps/mobile_flutter/android/.../SessionService.kt`                  |
+| iOS `DeviceEngine`               | Swift    | 418 | `apps/mobile_flutter/ios/Runner/DeviceEngine.swift`                  |
 
 ---
 
@@ -130,33 +135,6 @@ Communication uses 4 stable channels:
 
 > **Hard rule**: Telemetry is **never** streamed via MethodChannel. EventChannel is non-blocking and UI-friendly.
 
-### Command Reference
-
-```
-── Device Discovery ──────────────────────────────
-scan.start(filters?)         → ok
-scan.stop()                  → ok
-pair.start()                 → {device_id, display_name}
-
-── Connection ────────────────────────────────────
-device.connect(device_id)    → ok
-device.disconnect(device_id) → ok
-device.read_capabilities()   → CAPABILITIES payload
-
-── Session Control ───────────────────────────────
-session.start(START_SESSION) → ACK | ERROR
-session.stop(STOP_SESSION)   → ACK | ERROR
-output.set(SET_OUTPUT)       → ACK | ERROR
-
-── Phone-Screen Sessions ─────────────────────────
-screen.start(color_rgb, intensity, flicker_hz?) → ok
-screen.stop()                                    → ok
-
-── Safety ────────────────────────────────────────
-watchdog.configure(device_id, timeout_ms, safe_state=OFF) → ok
-adult_gate.request(purpose)  → {authorized: true/false}
-```
-
 ---
 
 ## Safety System Architecture
@@ -164,9 +142,8 @@ adult_gate.request(purpose)  → {authorized: true/false}
 ```mermaid
 graph TB
     subgraph SafetyControls["Safety Controls"]
-        FlickerDefault["Flicker Default: OFF<br/>Must be explicitly enabled"]
-        FlickerGuard["≥5 Hz Flicker Guard<br/>Full-screen interstitial<br/>Cannot tap-dismiss"]
-        MinorsMode["Minors Mode<br/>High-risk flicker blocked entirely"]
+        FlickerGuard["Flicker Frequency Guard<br/>≥5 Hz blocked behind full-screen<br/>non-dismissible interstitial"]
+        MinorsMode["Minors Mode<br/>Higher-risk modes blocked entirely"]
         AdultGate["Adult Gate<br/>Biometric auth required<br/>FaceID · TouchID · BiometricPrompt"]
         EStop["Emergency Stop<br/>Always-visible STOP button<br/>Reason: EMERGENCY_STOP"]
     end
@@ -178,7 +155,6 @@ graph TB
         DeviceStop["Device-Initiated Stop<br/>BATTERY_CRITICAL · THERMAL_CRITICAL<br/>WATCHDOG_TIMEOUT · DEVICE_FAULT"]
     end
 
-    FlickerDefault --> FlickerGuard
     FlickerGuard -->|"Minors mode active"| MinorsMode
     FlickerGuard -->|"Adult required"| AdultGate
 
@@ -194,48 +170,41 @@ graph TB
 
 | Safety Feature                | Implementation                                                                    |
 | ----------------------------- | --------------------------------------------------------------------------------- |
-| **Flicker OFF by default**    | Must be explicitly enabled by user                                                |
-| **≥5 Hz safety interstitial** | Full-screen, non-dismissible; requires explicit "I Understand the Risk"           |
-| **Minors mode**               | High-risk flicker completely blocked (`SafetyRiskLevel.restricted`)               |
-| **Adult gate**                | Biometric auth (FaceID/TouchID/BiometricPrompt). If unavailable: features blocked |
-| **Emergency stop**            | Always-visible button in any active session; ends with reason `EMERGENCY_STOP`    |
-| **BLE watchdog**              | Device enters safe state `OFF` if heartbeat lost > timeout                        |
+| **Flicker frequency guard**   | Output above 5 Hz blocked behind a full-screen, non-dismissible interstitial      |
+| **Minors mode**               | Higher-risk output modes blocked entirely                                          |
+| **Adult gate**                | Biometric auth (FaceID/TouchID/BiometricPrompt) required for gated functionality   |
+| **Emergency stop**            | Always-visible button in any active session; ends with reason `EMERGENCY_STOP`     |
+| **BLE watchdog**              | Device enters safe state `OFF` if heartbeat lost > timeout                         |
 
 ---
 
-## Domain Layer: Core Entities
-
-The domain package contains **pure Dart** entities and logic with zero external dependencies:
-
-| Category     | Components                                                                                                                                                               |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Entities** | Routine, Condition, Schedule, Tonation, SpectroChrome Color (12 colors), Color Attribute (78), Body Area (22), Device Profile, Calibration Profile, Device Group         |
-| **Logic**    | Routine Validator, Spectro Parser, Condition Search (alias resolution + medical name matching), Forecast Calculator (NOAA solar position + lunar phase), Begin Tonations |
-| **Policies** | Flicker Guardrails, Text Sanitizer (non-prescriptive language), Adult Gate Policy                                                                                        |
-| **Protocol** | Protocol v1.2 Messages (11 types), Parser, BLE Framing                                                                                                                   |
-| **Output**   | Light Output, Output Type (SCREEN/DEVICE), Session Mode                                                                                                                  |
-
----
-
-## Data Layer: SQLite Persistence
+## Data Layer: SQLite Persistence (offline-first source of truth)
 
 | Repository                | Responsibility                                                    |
 | ------------------------- | ----------------------------------------------------------------- |
-| `SessionRepository`       | Session history with start/stop times, reasons, and duration      |
+| `SessionRepository`       | Session history with start/stop times, reasons, duration          |
 | `TelemetryRepository`     | Sensor samples (opt-in, OFF by default)                           |
 | `DeviceProfileRepository` | Cached device capabilities for offline validation                 |
-| `SpectroRepository`       | Protocol data access (331 schedules, 600+ conditions)             |
-| `CalibrationRepository`   | Sensor calibration profiles                                       |
-| `DeviceGroupRepository`   | Multi-device group sessions                                       |
-| `ExportGenerator`         | Human-readable JSON export with ISO timestamps and explicit units |
+| `CalibrationRepository`   | Sensor calibration profiles                                        |
+| `DeviceGroupRepository`   | Multi-device group coordination                                    |
+| `ExportGenerator`         | Human-readable JSON export with ISO timestamps and explicit units  |
 
-**Export rule**: Never label results "normal" or "healthy." Export is factual: numbers + units only.
+### Cloud Sync (opt-in, implemented but not wired into live auth)
+
+| Component                | Status                                                                        |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| `FirebaseAuthRepository` | Implemented (123 LOC) — anonymous, email, Google, Apple sign-in               |
+| `CloudSyncService`       | Implemented (234 LOC) — Firestore routine upload, session sync, user-scoped   |
+| `firestore.rules`        | Production-shape user-scoped + shared-routines rules                          |
+| **Live wiring**          | App `main.dart` currently uses `_MockAuthRepository` — Firebase path ready but not active |
+
+This is honest framing: the cloud surface is **implemented production code**, but the app currently boots with a mock auth repository. The cutover from mock to Firebase is a single line in `main.dart` once the v2 auth flow is approved.
 
 ---
 
-## BLE Protocol v1.2
+## BLE Protocol Surface
 
-11 message types organized into two planes:
+11 message types organized into two planes (control + telemetry). All messages use a common envelope: `protocol_version`, `type`, `msg_id` (monotonic), `ts_ms`, `device_id`, `session_id`.
 
 ```
 ── Control Plane (App → Device) ──────────────────
@@ -254,21 +223,19 @@ DEVICE_EVENT       Warnings: THERMAL | BATTERY | CONTACT_LOST | IMMINENT_SHUTDOW
 DEVICE_STOP        Device-initiated stop: BATTERY_CRITICAL | THERMAL_CRITICAL | WATCHDOG
 ```
 
-All messages use a common envelope: `protocol_version`, `type`, `msg_id` (monotonic), `ts_ms`, `device_id`, `session_id`.
-
 ---
 
 ## Testing & CI/CD
 
 ### Test Coverage
 
-| Package   | Tests            | Focus                                                                                     |
-| --------- | ---------------- | ----------------------------------------------------------------------------------------- |
-| `domain`  | 248+             | Routine validation, flicker guardrails, spectro parser, condition search, safety policies |
-| `data`    | ✓                | SQLite repositories, export generator                                                     |
-| `ble`     | ✓                | BLE adapter, device state machine, group coordinator                                      |
-| `bridge`  | ✓                | Contract tests, payload serialization                                                     |
-| **Total** | **278+ passing** | **0 analyzer issues**                                                                     |
+| Package   | Focus                                                                                     |
+| --------- | ----------------------------------------------------------------------------------------- |
+| `domain`  | Validation, safety policies, parser, search index, protocol messages                      |
+| `data`    | SQLite repositories, export generator                                                     |
+| `ble`     | BLE adapter, device state machine, group coordinator                                      |
+| `bridge`  | Contract tests, payload serialization                                                     |
+| **Total** | **342 `test()`/`testWidgets()` calls across 35 test files, 0 analyzer issues**            |
 
 ### CI Pipeline (GitHub Actions)
 
@@ -278,19 +245,25 @@ All messages use a common envelope: `protocol_version`, `type`, `msg_id` (monoto
 | **Build Android APK** | Java 17 → `flutter build apk --debug` → upload artifact              |
 | **Build iOS**         | `pod install` → `flutter build ios --no-codesign --simulator`        |
 
-![Light Routines Flutter Test — 278 tests all passing](../Test-Evidence/lightroutines-flutter-test.png)
+![Light Routines Flutter Test — all passing](../Test-Evidence/lightroutines-flutter-test.png)
 
 ---
 
-## Data & Privacy
+## Platform Targets
 
-| Policy                | Implementation                                                                 |
-| --------------------- | ------------------------------------------------------------------------------ |
-| **Telemetry logging** | OFF by default (user opt-in)                                                   |
-| **Cloud sync**        | None in v1 (local-only, SQLite)                                                |
-| **Export**            | User-initiated only; pretty-printed JSON with ISO timestamps                   |
-| **Diagnostic logs**   | No sensitive data included                                                     |
-| **Language posture**  | Non-prescriptive; no "treat", "cure", "diagnose" language anywhere in app copy |
+**Production**: iOS, Android. Flutter scaffolding for macOS, Linux, and Windows is present in the repo but those are not production targets.
+
+---
+
+## Code Footprint
+
+| Metric                       | Value                                                  |
+| ---------------------------- | ------------------------------------------------------ |
+| Dart LOC (lib + tests)       | ~25,013 across 144 files                              |
+| Native Kotlin LOC (bridge)   | 740 (`DeviceEngine`, `SessionService`, `MainActivity`) |
+| Native Swift LOC (bridge)    | 475 (`DeviceEngine`, `AppDelegate`, `RunnerTests`)     |
+| Packages                     | 5 (`domain`, `data`, `bridge`, `ble`, `ui`)            |
+| Apps                         | 1 (`apps/mobile_flutter`)                              |
 
 ---
 

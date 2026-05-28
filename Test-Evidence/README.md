@@ -94,11 +94,11 @@ npx tsx scripts/verify-db-integrity.ts
 
 | Package   | Test Count | Focus Areas                                                                                                        |
 | --------- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
-| `domain`  | 248+       | Routine validation, flicker guardrails, spectro parser, condition search index, safety policies, protocol messages |
+| `domain`  | ✓          | Validation, safety policies, parser, search index, protocol messages                                               |
 | `data`    | ✓          | SQLite repositories, export generator                                                                              |
 | `ble`     | ✓          | BLE adapter, device state machine, group coordinator                                                               |
 | `bridge`  | ✓          | Contract tests, payload serialization                                                                              |
-| **Total** | **278+**   | **0 analyzer issues**                                                                                              |
+| **Total** | **342 `test()`/`testWidgets()` calls across 35 test files** | **0 analyzer issues**                                       |
 
 ### Test Commands
 
