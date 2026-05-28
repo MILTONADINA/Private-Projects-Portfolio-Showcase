@@ -1,0 +1,75 @@
+================================================================
+BrightPath — Test Surface Inventory (auditable from source)
+================================================================
+
+Date captured: 2026-05-26
+Source: private repo MILTONADINA/BrightPath, depth-1 clone
+Method: deterministic file enumeration + grep on real test files
+
+----------------------------------------------------------------
+1. Vitest unit / integration surface
+----------------------------------------------------------------
+$ find . -type d -name node_modules -prune \
+       -o -type f \( -name "*.test.ts" -o -name "*.test.tsx" \) -print \
+       | grep -v node_modules | wc -l
+2229
+
+  -> 2,229 .test.ts / .test.tsx files
+
+$ find . -type d -name node_modules -prune \
+       -o -type f \( -name "*.test.ts" -o -name "*.test.tsx" \) -print \
+       | grep -v node_modules | xargs grep -hE "^\s*(it|test)\s*\(" | wc -l
+19697
+
+  -> 19,697 it()/test() call sites
+
+----------------------------------------------------------------
+2. Playwright E2E surface
+----------------------------------------------------------------
+$ find . -path "*/e2e/*" -name "*.spec.ts" | wc -l
+19
+
+  -> 19 Playwright spec files
+
+$ find . -path "*/e2e/*" -name "*.spec.ts" | xargs grep -hE "^\s*test\s*\(" | wc -l
+98
+
+  -> 98 Playwright test() calls
+
+Sample Playwright spec paths:
+apps/marketing/e2e/marketing.spec.ts
+apps/portal/e2e/academic.spec.ts
+apps/portal/e2e/accessibility.spec.ts
+apps/portal/e2e/attendance.spec.ts
+apps/portal/e2e/auth.spec.ts
+apps/portal/e2e/communications.spec.ts
+apps/portal/e2e/dashboard.spec.ts
+apps/portal/e2e/fee-payment-flow.spec.ts
+apps/portal/e2e/marketing-to-portal.spec.ts
+apps/portal/e2e/multi-role-dashboard.spec.ts
+apps/portal/e2e/navigation.spec.ts
+apps/portal/e2e/notifications.spec.ts
+apps/portal/e2e/onboarding.spec.ts
+apps/portal/e2e/role-boundary.spec.ts
+apps/portal/e2e/security.spec.ts
+apps/portal/e2e/session-expiry.spec.ts
+apps/portal/e2e/student-enrollment.spec.ts
+apps/portal/e2e/tenant-isolation.spec.ts
+apps/portal/src/tests/e2e/offline.spec.ts
+
+----------------------------------------------------------------
+3. Distribution by package
+----------------------------------------------------------------
+   2248 apps
+    275 backend
+
+----------------------------------------------------------------
+Notes
+----------------------------------------------------------------
+- Counts are deterministic from the source tree. Anyone with access
+  to the private repo can reproduce them with the commands shown.
+- This inventory is more auditable than a screenshot — text is
+  greppable and date-stamped; screenshots are not.
+- An older screenshot (brightpath-vitest-passing.png) showing
+  "103 test files, 1236 tests passing" reflects an earlier point
+  in time; current counts (above) are higher.

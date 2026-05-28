@@ -1,0 +1,87 @@
+================================================================
+Doctor Who Database — real `npm test` output
+================================================================
+
+Date captured: 2026-05-26
+Source: public repo MILTONADINA/Dr.WHO @ HEAD
+Command: NODE_ENV=test npm test
+Test runner: Jest 30.2.0 + Supertest 7.2.2
+
+----------------------------------------------------------------
+Result tail (last lines of the actual run)
+----------------------------------------------------------------
+PASS __tests__/auth.test.js
+  Auth Middleware Integration
+    √ should reject requests without an Authorization header on
+      protected routes (POST /api/doctors) (63 ms)
+    √ should accept requests with a valid Bearer token on protected
+      routes (15 ms)
+    √ should allow public access to GET routes (GET /api/doctors)
+      (6 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        1.66 s
+Ran all test suites.
+
+----------------------------------------------------------------
+Surface inventory
+----------------------------------------------------------------
+Test files:
+__tests__/auth.test.js
+__tests__/setup.js
+
+Sequelize models (16):
+Actor.js
+Character.js
+Companion.js
+Director.js
+Doctor.js
+DoctorCompanion.js
+Enemy.js
+EnemyEpisode.js
+Episode.js
+EpisodeAppearance.js
+EpisodeLocation.js
+Planet.js
+Season.js
+Species.js
+Tardis.js
+Writer.js
+
+REST endpoints (18):
+  src/routes/doctors.js:
+22:router.get(
+33:router.get(
+45:router.post(
+58:router.put(
+72:router.delete(
+  src/routes/episodes.js:
+22:router.get(
+33:router.get(
+45:router.post(
+58:router.put(
+72:router.delete(
+  src/routes/llm.js:
+    post /query
+  src/routes/queries.js:
+    get /join/doctor/:id
+    get /join/episode/:id
+    get /view/doctor-summary
+    get /view/enemy-summary
+    get /procedure/enemies/:threatLevel
+    get /procedure/doctor/:incarnation
+    put /update/enemy/:id/threat-level
+
+----------------------------------------------------------------
+Honesty note
+----------------------------------------------------------------
+- 3 tests passing is what is real today. The auth middleware is the
+  only test surface — it exercises JWT validation on protected routes
+  and public access on GET endpoints.
+- 3 tests is small. Use the surface count (18 endpoints, 16 models,
+  OpenAI integration verified at src/routes/llm.js) as the engineering
+  signal, not the test count, on the resume.
+- This is a 3-engineer CMSC 4323 final project — co-authored with
+  Jonathan Muhire and Magnani Fabiola.

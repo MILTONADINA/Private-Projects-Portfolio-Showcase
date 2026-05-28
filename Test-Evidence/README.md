@@ -14,6 +14,20 @@ _Proof of quality gates across all three projects._
 
 Every project follows a **pyramid testing strategy**: many fast unit tests at the base, fewer integration tests in the middle, and targeted E2E tests at the top. Tests are not afterthoughts — they're quality gates enforced by CI/CD on every push.
 
+## Evidence Index
+
+Each test-evidence artifact below is either (a) a real PNG screenshot captured by the engineer, or (b) a deterministic source-tree inventory anyone with private-repo access can reproduce with the commands shown in the file. Text inventories are more auditable than screenshots — text is greppable and date-stamped; screenshots are not.
+
+| Project          | Artifact                                                                  | Format | Reproducible? |
+| ---------------- | ------------------------------------------------------------------------- | ------ | ------------- |
+| BrightPath       | [`brightpath-test-inventory.txt`](./brightpath-test-inventory.txt)        | Text   | Yes (commands inline) |
+| BrightPath       | [`brightpath-vitest-passing.png`](./brightpath-vitest-passing.png)        | PNG    | Engineer-captured, point-in-time |
+| Light Routines   | [`lightroutines-test-inventory.txt`](./lightroutines-test-inventory.txt)  | Text   | Yes (commands inline) |
+| Light Routines   | [`lightroutines-flutter-test.png`](./lightroutines-flutter-test.png)      | PNG    | Engineer-captured, point-in-time |
+| Lumière          | [`lumiere-smoke-check.png`](./lumiere-smoke-check.png)                    | PNG    | Engineer-captured, point-in-time |
+| Flourish         | [`flourish-test-inventory.txt`](./flourish-test-inventory.txt)            | Text   | Yes (commands inline) |
+| Doctor Who DB    | [`drwho-jest-log.txt`](./drwho-jest-log.txt)                              | Text   | Yes — real `npm test` output included verbatim |
+
 ---
 
 ## BrightPath — Vitest + Playwright

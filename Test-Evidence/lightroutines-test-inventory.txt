@@ -1,0 +1,63 @@
+================================================================
+Light Routines — Test Surface Inventory (auditable from source)
+================================================================
+
+Date captured: 2026-05-26
+Source: private repo MILTONADINA/StartUP, depth-1 clone
+Method: deterministic file enumeration + grep on real test files
+Test runner: flutter_test (Flutter SDK 3.19+)
+
+Note on running the tests directly: a green flutter_test run requires
+the Flutter SDK and `flutter pub get` per package. We did not run the
+suite here because the environment does not have Flutter installed.
+This inventory is generated entirely from source-tree enumeration —
+the file count and test-call count are deterministic facts about the
+real repo, reproducible by anyone with access to it.
+
+----------------------------------------------------------------
+1. Test file count
+----------------------------------------------------------------
+$ find . -name "*_test.dart" -not -path "*/.dart_tool/*" | wc -l
+35
+
+  -> 35 *_test.dart files
+
+----------------------------------------------------------------
+2. test() / testWidgets() call count
+----------------------------------------------------------------
+
+$ find . -name "*_test.dart" -not -path "*/.dart_tool/*" \
+    | xargs grep -hE "^\s*(test|testWidgets)\s*\(" | wc -l
+342
+
+  -> 342 test() / testWidgets() call sites
+
+----------------------------------------------------------------
+3. Distribution by package
+----------------------------------------------------------------
+
+Test files per package (sorted by count):
+     25 domain
+      3 mobile_flutter
+      3 ble
+      2 data
+      1 ui
+      1 bridge
+
+----------------------------------------------------------------
+4. CI workflow (real .github/workflows/ci.yml)
+----------------------------------------------------------------
+
+Per-package quality gate (flutter pub get → analyze → test),
+plus Android APK build (Java 17) and iOS build (no codesign).
+
+ci.yml
+
+----------------------------------------------------------------
+Notes
+----------------------------------------------------------------
+- Counts are deterministic from the source tree.
+- An older screenshot (lightroutines-flutter-test.png) showing
+  "278 tests all passing" reflects an earlier point; current
+  call-site count (342) is higher.
+- 0 analyzer issues across all packages per blueprint_v1.2.md.
