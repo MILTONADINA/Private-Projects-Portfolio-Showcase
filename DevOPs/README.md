@@ -77,6 +77,89 @@ A high-fidelity middleware proxy between the agent and the LLM API. Prunes irrel
 - **Tier 2:** episodic memory (captured sessions awaiting promotion)
 - **Tier 3:** ground-truth memory (promoted, attested, verifiable)
 
+### Three-Tier Memory Pipeline
+
+```mermaid
+graph LR
+    LLM["LLM<br/>(Claude / Codex / etc.)"]
+    Proxy["Stratum Proxy<br/>(Fastify on CF Workers)"]
+
+    subgraph T1["Tier 1 — Hot (RAM)"]
+        T1Store["In-process<br/>Durable Object state"]
+        T1Detail["• Raw verbatim turns<br/>• 2-hour rolling window<br/>• Sub-millisecond access<br/>• Input to KadaneDial pruner"]
+    end
+
+    subgraph T2["Tier 2 — Warm (Supabase)"]
+        T2Store["Postgres<br/>(typed fact tables)"]
+        T2Detail["• Structured facts only<br/>• 30-day retention<br/>• 5–50ms access<br/>• Extracted via schema, not LLM summary"]
+    end
+
+    subgraph T3["Tier 3 — Cold (Pinecone + Neo4j)"]
+        T3Store["Vector + graph"]
+        T3Detail["• Promoted from T2 after 30 days<br/>• Embedded + relationship-indexed<br/>• 50–200ms access<br/>• Attested against git history"]
+    end
+
+    LLM --> Proxy
+    Proxy --> T1Store
+    T1Store -->|"evict at 2h →<br/>schema extractor"| T2Store
+    T2Store -->|"promote at 30d →<br/>embed + graph link"| T3Store
+    T2Store -->|"verify against<br/>git commit history"| Proxy
+    T3Store -->|"query when T1+T2<br/>insufficient"| Proxy
+
+    style T1Store fill:#dc2626,color:#fff
+    style T2Store fill:#ea580c,color:#fff
+    style T3Store fill:#0891b2,color:#fff
+```
+
+> **Design principle**: every promotion step writes **structured facts**, never LLM summaries. Schema-based extractor converts raw exchanges into typed records (`FunctionDeprecation`, `PolicyUpdate`, `TechDecision`, …). Each fact is a hard, auditable data point — wrong facts are caught by the audit engine; "vaguely right" summaries never enter the system.
+
+### Hooks as a Deterministic Safety Floor
+
+```mermaid
+graph TB
+    subgraph Cognitive["LLM Cognitive Space"]
+        Agent["Agent Plan<br/>(model output)"]
+    end
+
+    subgraph PreTool["Pre-Tool Hooks (run before every tool call)"]
+        H1["block-rm-rf.sh"]
+        H2["block-prod-write.sh"]
+        H3["block-secrets.sh"]
+        H4["budget-brake.sh"]
+        H5["client-boundary.sh"]
+        H6["external-content-boundary.sh"]
+        H7["loop-detection.sh"]
+    end
+
+    subgraph Tool["Tool Execution"]
+        ToolRun["Tool runs<br/>(file edit, bash, etc.)"]
+    end
+
+    subgraph PostTool["Post-Tool Hooks (run after every tool call)"]
+        P1["auto-format.sh"]
+        P2["gitleaks-scan.sh"]
+    end
+
+    subgraph SessionEdges["Session Edges"]
+        SS["session-start: load-baton.sh"]
+        SE["session-end: rotate-session-key.sh<br/>+ write-baton.sh"]
+    end
+
+    SS --> Agent
+    Agent --> PreTool
+    PreTool -->|"all pass"| ToolRun
+    PreTool -->|"any block"| Refused["Action refused<br/>before execution"]
+    ToolRun --> PostTool
+    PostTool --> SE
+
+    style Cognitive fill:#7c3aed,color:#fff
+    style PreTool fill:#dc2626,color:#fff
+    style PostTool fill:#ea580c,color:#fff
+    style Refused fill:#000000,color:#fff
+```
+
+The hook layer sits **outside** the LLM cognitive space. The Constitution sits **above** every skill and **below** every action. You cannot ask the agent if it's about to break things — you must prove it mathematically. The hook names in this diagram are the real files at `hooks/universal/{pre,post,session-start,session-end}/`.
+
 ---
 
 ## Tech Stack

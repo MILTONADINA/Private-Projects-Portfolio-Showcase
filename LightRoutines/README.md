@@ -135,6 +135,41 @@ Communication uses 4 stable channels:
 
 > **Hard rule**: Telemetry is **never** streamed via MethodChannel. EventChannel is non-blocking and UI-friendly.
 
+### Native Bridge Sequence — Session Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UI as Flutter UI<br/>(Dart)
+    participant BR as Bridge<br/>(MethodChannel)
+    participant N as Native Engine<br/>(Swift / Kotlin)
+    participant FGS as Foreground Service<br/>(Android only)
+    participant TX as Telemetry Stream<br/>(EventChannel)
+
+    UI->>BR: scan.start
+    BR->>N: invokeMethod("scan.start")
+    N-->>UI: scan results (via device_engine.scan EventChannel)
+    UI->>BR: device.connect(device_id)
+    BR->>N: invokeMethod("device.connect")
+    N-->>UI: connection state (via device_engine.connection)
+
+    UI->>BR: session.start(START_SESSION)
+    BR->>N: invokeMethod("session.start")
+    Note over N,FGS: Android: spawn Foreground Service<br/>iOS: enable CoreBluetooth state restoration
+    N->>FGS: startForeground(NOTIFICATION_ID, ...)
+    N-->>UI: ACK
+    N->>TX: TELEMETRY samples + DEVICE_EVENT warnings
+    TX-->>UI: stream (sub-50ms)
+    Note over UI,N: Multi-hour session continues<br/>while app is backgrounded
+
+    UI->>BR: session.stop(USER_STOP)
+    BR->>N: invokeMethod("session.stop")
+    N->>FGS: stopForeground(true)
+    N-->>UI: DEVICE_STOP { reason: USER_STOP }
+```
+
+The 4-channel split (one `MethodChannel` + three `EventChannel`s) is real and named exactly as shown — `device_engine.method`, `device_engine.scan`, `device_engine.connection`, `device_engine.telemetry`. Command names (`scan.start`, `device.connect`, `session.start`, `session.stop`, `adult_gate.request`, etc.) are real `case` labels in the native code.
+
 ---
 
 ## Safety System Architecture
@@ -179,6 +214,56 @@ graph TB
 ---
 
 ## Data Layer: SQLite Persistence (offline-first source of truth)
+
+### Offline-First Data Flow
+
+```mermaid
+graph TB
+    subgraph App["Flutter App"]
+        UI["UI Layer<br/>packages/ui"]
+        Domain["Domain Layer<br/>packages/domain<br/>(pure Dart)"]
+    end
+
+    subgraph Data["Data Layer (packages/data)"]
+        SessRepo["SessionRepository"]
+        ProfRepo["DeviceProfileRepository"]
+        TelRepo["TelemetryRepository"]
+        CalRepo["CalibrationRepository"]
+        Export["ExportGenerator<br/>(user-initiated)"]
+    end
+
+    subgraph LocalStore["Local SQLite (source of truth)"]
+        DB[("drift / SQLite<br/>on-device DB")]
+    end
+
+    subgraph CloudOptIn["Cloud Layer — Implemented, not wired"]
+        FAuth["FirebaseAuthRepository<br/>(123 LOC)"]
+        Sync["CloudSyncService<br/>(234 LOC, Firestore)"]
+        Rules["firestore.rules<br/>(user-scoped)"]
+    end
+
+    subgraph LiveBoot["Live App Boot (main.dart)"]
+        MockAuth["_MockAuthRepository<br/>(currently wired)"]
+    end
+
+    UI --> Domain
+    Domain --> SessRepo & ProfRepo & TelRepo & CalRepo
+    SessRepo & ProfRepo & TelRepo & CalRepo --> DB
+    DB --> Export
+
+    MockAuth -.->|"swap one line<br/>to enable Firebase"| FAuth
+    FAuth -.-> Sync
+    Sync -.-> Rules
+
+    style DB fill:#0891b2,color:#fff
+    style MockAuth fill:#d97706,color:#fff
+    style CloudOptIn stroke-dasharray: 5 5
+    style FAuth stroke-dasharray: 5 5
+    style Sync stroke-dasharray: 5 5
+    style Rules stroke-dasharray: 5 5
+```
+
+**Read this honestly**: the solid edges are what runs in the current build — every repository writes to the local SQLite database and that is the source of truth. The dashed edges are the cloud surface — fully implemented in source (~550 LOC + a production-shape Firestore rules file) but not wired into the auth flow yet. `main.dart` currently boots with `_MockAuthRepository`. The cutover is a single line change.
 
 | Repository                | Responsibility                                                    |
 | ------------------------- | ----------------------------------------------------------------- |

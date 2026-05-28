@@ -109,6 +109,82 @@ graph TB
 
 All accounted for from day one. The GDPR architecture is in place; EU deployment is gated on a legal sign-off in the launch-readiness checklist.
 
+### Compliance Control Matrix
+
+Mapping of regulation → control surfaces that exist in the codebase today. Counts in parentheses are the number of repo files referencing each regulation by name (real grep counts: HIPAA=62, COPPA=89, GDPR=22, CCPA=8, MHMDA=6, FDA-SaMD=multiple ADRs).
+
+```mermaid
+graph LR
+    subgraph Regs["Regulations"]
+        HIPAA["HIPAA<br/>(62 files)"]
+        COPPA["COPPA<br/>(89 files)"]
+        GDPR["GDPR<br/>(22 files)"]
+        CCPA["CCPA<br/>(8 files)"]
+        MHMDA["MHMDA<br/>(6 files)"]
+        FDA["FDA SaMD<br/>(stay-out posture)"]
+    end
+
+    subgraph Controls["Implemented Controls"]
+        Auth["Clerk Auth + MFA<br/>(ADR-0006)"]
+        RLS["PostgreSQL RLS<br/>tenant-scoped (D-020)"]
+        Audit["audit_log_entry<br/>append-only ledger<br/>7-year retention"]
+        Crypto["Envelope crypto<br/>direct KMS at MVP<br/>(ADR-0015, D-026)"]
+        ContentSep["Server-delivered<br/>clinical content<br/>(ADR-0017)"]
+        Disclaim["7-touchpoint disclaimer<br/>(Semgrep-enforced)"]
+        Erase["Right-to-erasure<br/>endpoints + service"]
+        Consent["Consent management<br/>+ data classification"]
+    end
+
+    HIPAA --> Auth & RLS & Audit & Crypto
+    COPPA --> Auth & Consent & Erase
+    GDPR --> Consent & Erase & Audit
+    CCPA --> Consent & Erase
+    MHMDA --> Crypto & Consent
+    FDA --> ContentSep & Disclaim
+
+    style HIPAA fill:#dc2626,color:#fff
+    style COPPA fill:#ea580c,color:#fff
+    style GDPR fill:#7c3aed,color:#fff
+    style CCPA fill:#0891b2,color:#fff
+    style MHMDA fill:#d97706,color:#fff
+    style FDA fill:#059669,color:#fff
+```
+
+### Audit-Log Schema
+
+The audit ledger is **append-only at the database layer**. Migration `0002_audit_log_immutability` runs `REVOKE UPDATE, DELETE ON audit_log_entry FROM flourish_app` — even the application's own database user cannot mutate audit rows. Integration test `db-immutability.integration.test.ts` proves an `UPDATE` attempt fails at the DB layer.
+
+```mermaid
+erDiagram
+    AUDIT_LOG_ENTRY {
+        uuid id PK
+        timestamptz occurred_at "default now()"
+        enum actor_type "user | service | system"
+        uuid actor_id "NULL when actor_type=system; no FK (actor may be deleted)"
+        text actor_role "snapshot at time of action"
+        text action "controlled vocab — see audit-logging-spec.md"
+        text subject_type
+        uuid subject_id
+        uuid tenant_context "account scope; NULL for system actions"
+        enum outcome "success | failure | denied"
+        text request_id "trace correlation"
+        text ip_hash "SHA-256(ip + workspace_salt) — NEVER raw IP"
+        text user_agent_class "bucketed (e.g. ios_app_1.2.0) — NEVER raw UA"
+        jsonb metadata "PHI-safe by per-event Zod .strict() schemas"
+    }
+
+    AUDIT_LOG_ENTRY ||--|| ACTION_REGISTRY : "documented in audit-logging-spec.md"
+    AUDIT_LOG_ENTRY ||--|| EVENT_SCHEMAS : "Zod .strict() per action"
+```
+
+| Privacy property                | How it's enforced                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **No raw IP in logs**           | `ip_hash` column stores `SHA-256(ip + workspace_salt)`. Salt rotates annually; previous salt retained for query backfill. |
+| **No raw User-Agent**           | `user_agent_class` stores a bucketed class (`ios_app_1.2.0`), never the raw UA string.                  |
+| **No PHI in metadata**          | Per-event Zod schemas use `.strict()` — unknown keys are rejected. Caller discipline: catalog/policy IDs, durations, counts, error codes only. |
+| **Append-only**                 | DB-level `REVOKE UPDATE, DELETE` on the table from the app role.                                        |
+| **7-year retention**            | 90 days hot Postgres + 6+ years cold S3. NO cascade from `account.deleted_at`.                          |
+
 ---
 
 ## Security CI Pipeline
