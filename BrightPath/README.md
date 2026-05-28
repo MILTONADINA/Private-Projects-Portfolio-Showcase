@@ -328,7 +328,9 @@ Multi-provider payment orchestration via Supabase Edge Functions:
 | `deploy-staging.yml`    | Push to develop | Staging deployment              |
 | `deploy-production.yml` | Push to main    | Production deployment           |
 
-![BrightPath Vitest — 103 test files, 1236 tests passing](../Test-Evidence/brightpath-vitest-passing.png)
+![BrightPath Vitest — fresh 2026-05-28 run across 7 test categories (security/a11y/i18n/boundary/regression/rate-limiting/smoke): 19 files, 260/260 tests passed. Full portal surface 705 *.test.* files; repo-wide inventory 2,229 files / 19,697 it/test() call sites.](../Test-Evidence/brightpath-vitest-passing.png)
+
+> The screenshot above is from real `npx vitest run` commands executed against `apps/portal/src/tests/<category>` on 2026-05-28. The figures are verifiable: re-clone, run the same commands, get the same green counts. Full-suite run wasn't feasible in one session (2,229 test files); the categories shown were picked to span correctness (boundary/regression), security (security/rate-limiting), and quality (a11y/i18n/smoke).
 
 ---
 

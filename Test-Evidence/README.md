@@ -20,14 +20,16 @@ Each test-evidence artifact below is either (a) a real PNG screenshot captured b
 
 | Project          | Artifact                                                                  | Format | What it shows | Reproducible? |
 | ---------------- | ------------------------------------------------------------------------- | ------ | ------------- | ------------- |
-| BrightPath       | [`brightpath-test-inventory.txt`](./brightpath-test-inventory.txt)        | Text   | Reproducible counts (2,229 test files / 19,697 calls / 19 Playwright specs) | Yes (commands inline) |
-| BrightPath       | [`brightpath-vitest-passing.png`](./brightpath-vitest-passing.png)        | PNG    | Engineer-captured terminal screenshot, point-in-time (older numbers) | Engineer-captured |
+| BrightPath       | [`brightpath-vitest-passing.png`](./brightpath-vitest-passing.png)        | PNG    | **Real `vitest run` 2026-05-28** — 7 test categories, 19 files, 260/260 tests passed (security/a11y/i18n/boundary/regression/rate-limiting/smoke) | Yes — `pnpm install --filter @brightpath/portal && cd apps/portal && npx vitest run src/tests/<category>` |
+| BrightPath       | [`brightpath-test-inventory.txt`](./brightpath-test-inventory.txt)        | Text   | Full surface counts (2,229 test files / 19,697 calls / 19 Playwright specs) | Yes (commands inline) |
+| SchoolGrid (BrightPath ecosystem) | [`schoolgrid-vitest-passing.png`](./schoolgrid-vitest-passing.png) | PNG | **Real `npm test` 2026-05-28** — 40 files / 309 tests passed in 25.16s | Yes — `git clone Timetable-generator && npm install && npm test` |
+| Light Routines   | [`lightroutines-flutter-test.png`](./lightroutines-flutter-test.png)      | PNG    | **Real `flutter test` 2026-05-26** — 5 packages, 333 tests passed, 0 failed | Yes — `flutter test` per package |
 | Light Routines   | [`lightroutines-test-inventory.txt`](./lightroutines-test-inventory.txt)  | Text   | Source-tree inventory (35 test files) | Yes (commands inline) |
-| Light Routines   | [`lightroutines-flutter-test.png`](./lightroutines-flutter-test.png)      | PNG    | **Real `flutter test` output captured 2026-05-26** — 5 packages, 333 tests passed, 0 failed | Yes — re-run `flutter test` per package |
-| Lumière          | [`lumiere-home.png`](./lumiere-home.png)                                  | PNG    | **Real Next.js 16 SSR render** of `/en` home page captured via headless Chromium 2026-05-26 | Yes — `npm run dev` then capture |
-| Lumière          | [`lumiere-smoke-check.png`](./lumiere-smoke-check.png)                    | PNG    | Engineer-captured terminal screenshot, point-in-time (custom assert harness) | Engineer-captured |
+| Lumière          | [`lumiere-home.png`](./lumiere-home.png)                                  | PNG    | **Real Next.js 16 SSR render** of `/en` captured via headless Chromium 2026-05-28 | Yes — `npm run dev` then Playwright capture |
+| Lumière          | [`lumiere-smoke-check.png`](./lumiere-smoke-check.png)                    | PNG    | Engineer-captured terminal screenshot (custom assert harness, 6 assertions) | Engineer-captured |
+| Flourish         | [`flourish-test-passing.png`](./flourish-test-passing.png)                | PNG    | **Real `pnpm test` 2026-05-28** — 45 Turbo tasks, 1,042 tests passed across 15 workspaces, 0 failed | Yes — `pnpm install && pnpm test` |
 | Flourish         | [`flourish-test-inventory.txt`](./flourish-test-inventory.txt)            | Text   | Source-tree inventory (133 test files / 1,121 calls / 27 ADRs) | Yes (commands inline) |
-| Doctor Who DB    | [`drwho-jest-passing.png`](./drwho-jest-passing.png)                      | PNG    | **Real `npm test` output captured 2026-05-28** — 3/3 tests passed | Yes — `npm test` |
+| Doctor Who DB    | [`drwho-jest-passing.png`](./drwho-jest-passing.png)                      | PNG    | **Real `npm test` 2026-05-28** — 3/3 tests passed | Yes — `NODE_ENV=test npm test` |
 | Doctor Who DB    | [`drwho-jest-log.txt`](./drwho-jest-log.txt)                              | Text   | Verbatim Jest output + endpoint + model inventory | Yes |
 
 ---

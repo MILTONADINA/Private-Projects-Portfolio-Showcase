@@ -203,6 +203,12 @@ CodeQL was evaluated and explicitly deferred (D-019 in the decision log): Semgre
 
 See [`../Security-Evidence/`](../Security-Evidence) for sanitized excerpts of each workflow.
 
+### Test Evidence
+
+![Flourish — real `pnpm test` 2026-05-28: 45 Turbo tasks, 1,042 tests passed across 15 workspaces, 0 failed](../Test-Evidence/flourish-test-passing.png)
+
+> Largest passing surfaces: `@flourish/api` 449 tests, `@flourish/validation` 173, `@flourish/clinical-engine` 80, `@flourish/clinical-content` 60. Reproducible: `git clone MILTONADINA/Flourish && pnpm install && pnpm test`.
+
 ---
 
 ## Key Engineering Decisions

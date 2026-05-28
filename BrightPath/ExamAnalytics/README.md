@@ -79,6 +79,14 @@ Tables (drift): `users`, `activity_logs`, `school_config`, `classes`, `students`
 - **Reports** — PDF generation via `pdf` + `printing`, printable to physical printer or saved as PDF.
 - **Import / export** — file-picker driven, with snapshot table for historic backups.
 
+### Testing status (honest)
+
+The `test/widget_test.dart` file is currently a placeholder (`void main() {}` with an inline comment "replace with real integration tests once screens are built"). `flutter test` therefore reports "No tests were found." This is accurate — the data layer and feature folders carry a 12-table drift schema, but the test surface for this module is still pending.
+
+`flutter analyze` runs cleanly with 271 info-level hints (mostly `withOpacity` deprecation), 0 errors.
+
+The 12-table drift schema (above) and the architectural decisions below are the evidence for this module, not a test-count screenshot.
+
 ---
 
 ## Key Engineering Decisions

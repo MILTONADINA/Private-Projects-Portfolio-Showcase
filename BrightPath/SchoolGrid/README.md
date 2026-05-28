@@ -110,6 +110,10 @@ graph LR
 
 CI pipeline (`.github/workflows/ci.yml`): lint → typecheck → unit tests → build → bundle-size check → E2E across 3 browsers, with bundle stats uploaded as an artifact.
 
+![SchoolGrid Pro — real `npm test` run 2026-05-28: 40 test files, 309/309 tests passed in 25.16s](../../Test-Evidence/schoolgrid-vitest-passing.png)
+
+> Reproducible: `git clone MILTONADINA/Timetable-generator && npm install && npm test`.
+
 ---
 
 ## Why this is a BrightPath ecosystem module
