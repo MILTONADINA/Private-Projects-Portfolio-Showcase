@@ -112,7 +112,7 @@ graph TB
 
 ## Database Design
 
-The database implements **34 sequential migrations** with comprehensive Row-Level Security. The core data model supports multi-tenancy at every level.
+The database implements **58 sequential migrations** with comprehensive Row-Level Security across **1,026 policies**. The full schema spans 398 tables; the diagram below shows the multi-tenant core that drives the rest.
 
 ### Entity Relationship Diagram
 
@@ -231,6 +231,29 @@ USING (
 ```
 
 **Key enforcement rule**: The `tenant_id` is derived from the authenticated user's JWT via `auth.uid()` → `user_organizations` lookup. The client never sends a `tenant_id` parameter.
+
+### RLS Enforcement Flow
+
+```mermaid
+graph TB
+    Client["Authenticated Client<br/>(holds Supabase JWT)"]
+    PostgREST["PostgREST / Supabase API<br/>extracts auth.uid() from JWT"]
+    Engine["PostgreSQL Engine<br/>enforces RLS USING clauses<br/>on every row"]
+    UserCtx["user_roles + users tables<br/>resolve tenant_id server-side"]
+    Tables["Tenant-Scoped Tables<br/>students · classes · grades · invoices · payments · ..."]
+    Result["Result Set<br/>(only rows matching tenant)"]
+
+    Client -->|"Bearer token"| PostgREST
+    PostgREST -->|"set local role + JWT"| Engine
+    Engine -->|"evaluate per row"| UserCtx
+    UserCtx -->|"tenant_id derived"| Tables
+    Tables --> Result
+
+    style Engine fill:#059669,color:#fff
+    style UserCtx fill:#0891b2,color:#fff
+```
+
+The policy lives at the database engine — even an authentication-bypass bug in the application layer cannot return another tenant's rows, because PostgreSQL itself filters them out before they ever leave the database. Sanitized real-policy excerpts are committed in [`Security-Evidence/brightpath-rls-examples.sql`](../Security-Evidence/brightpath-rls-examples.sql).
 
 ---
 
