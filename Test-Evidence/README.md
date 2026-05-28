@@ -18,15 +18,17 @@ Every project follows a **pyramid testing strategy**: many fast unit tests at th
 
 Each test-evidence artifact below is either (a) a real PNG screenshot captured by the engineer, or (b) a deterministic source-tree inventory anyone with private-repo access can reproduce with the commands shown in the file. Text inventories are more auditable than screenshots — text is greppable and date-stamped; screenshots are not.
 
-| Project          | Artifact                                                                  | Format | Reproducible? |
-| ---------------- | ------------------------------------------------------------------------- | ------ | ------------- |
-| BrightPath       | [`brightpath-test-inventory.txt`](./brightpath-test-inventory.txt)        | Text   | Yes (commands inline) |
-| BrightPath       | [`brightpath-vitest-passing.png`](./brightpath-vitest-passing.png)        | PNG    | Engineer-captured, point-in-time |
-| Light Routines   | [`lightroutines-test-inventory.txt`](./lightroutines-test-inventory.txt)  | Text   | Yes (commands inline) |
-| Light Routines   | [`lightroutines-flutter-test.png`](./lightroutines-flutter-test.png)      | PNG    | Engineer-captured, point-in-time |
-| Lumière          | [`lumiere-smoke-check.png`](./lumiere-smoke-check.png)                    | PNG    | Engineer-captured, point-in-time |
-| Flourish         | [`flourish-test-inventory.txt`](./flourish-test-inventory.txt)            | Text   | Yes (commands inline) |
-| Doctor Who DB    | [`drwho-jest-log.txt`](./drwho-jest-log.txt)                              | Text   | Yes — real `npm test` output included verbatim |
+| Project          | Artifact                                                                  | Format | What it shows | Reproducible? |
+| ---------------- | ------------------------------------------------------------------------- | ------ | ------------- | ------------- |
+| BrightPath       | [`brightpath-test-inventory.txt`](./brightpath-test-inventory.txt)        | Text   | Reproducible counts (2,229 test files / 19,697 calls / 19 Playwright specs) | Yes (commands inline) |
+| BrightPath       | [`brightpath-vitest-passing.png`](./brightpath-vitest-passing.png)        | PNG    | Engineer-captured terminal screenshot, point-in-time (older numbers) | Engineer-captured |
+| Light Routines   | [`lightroutines-test-inventory.txt`](./lightroutines-test-inventory.txt)  | Text   | Source-tree inventory (35 test files) | Yes (commands inline) |
+| Light Routines   | [`lightroutines-flutter-test.png`](./lightroutines-flutter-test.png)      | PNG    | **Real `flutter test` output captured 2026-05-26** — 5 packages, 333 tests passed, 0 failed | Yes — re-run `flutter test` per package |
+| Lumière          | [`lumiere-home.png`](./lumiere-home.png)                                  | PNG    | **Real Next.js 16 SSR render** of `/en` home page captured via headless Chromium 2026-05-26 | Yes — `npm run dev` then capture |
+| Lumière          | [`lumiere-smoke-check.png`](./lumiere-smoke-check.png)                    | PNG    | Engineer-captured terminal screenshot, point-in-time (custom assert harness) | Engineer-captured |
+| Flourish         | [`flourish-test-inventory.txt`](./flourish-test-inventory.txt)            | Text   | Source-tree inventory (133 test files / 1,121 calls / 27 ADRs) | Yes (commands inline) |
+| Doctor Who DB    | [`drwho-jest-passing.png`](./drwho-jest-passing.png)                      | PNG    | **Real `npm test` output captured 2026-05-28** — 3/3 tests passed | Yes — `npm test` |
+| Doctor Who DB    | [`drwho-jest-log.txt`](./drwho-jest-log.txt)                              | Text   | Verbatim Jest output + endpoint + model inventory | Yes |
 
 ---
 
@@ -112,7 +114,7 @@ npx tsx scripts/verify-db-integrity.ts
 | `data`    | ✓          | SQLite repositories, export generator                                                                              |
 | `ble`     | ✓          | BLE adapter, device state machine, group coordinator                                                               |
 | `bridge`  | ✓          | Contract tests, payload serialization                                                                              |
-| **Total** | **342 `test()`/`testWidgets()` calls across 35 test files** | **0 analyzer issues**                                       |
+| **Total** | **333 tests passed (real `flutter test` run, 5 packages)** | **0 analyzer issues**                                       |
 
 ### Test Commands
 
@@ -143,7 +145,7 @@ cd apps/mobile_flutter && flutter analyze
 
 ### Evidence
 
-![Light Routines Flutter Test — 278 tests all passing](./lightroutines-flutter-test.png)
+![Light Routines Flutter Test — 5 packages, 333 tests passed, 0 failed (real run 2026-05-26)](./lightroutines-flutter-test.png)
 
 ---
 

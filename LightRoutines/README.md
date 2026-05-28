@@ -7,7 +7,7 @@
 [![Stack](https://img.shields.io/badge/Flutter-Dart_3.3-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
 [![iOS](https://img.shields.io/badge/iOS-Swift-F05138?style=flat-square&logo=swift)](https://developer.apple.com/swift/)
 [![Android](https://img.shields.io/badge/Android-Kotlin-7F52FF?style=flat-square&logo=kotlin)](https://kotlinlang.org)
-[![Tests](https://img.shields.io/badge/Tests-342_passing-brightgreen?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/Tests-333_passing-brightgreen?style=flat-square)](.)
 
 </div>
 
@@ -97,7 +97,7 @@ graph TB
 **Why?**
 
 - **Enforced boundaries**: Dart's package system physically prevents `domain` from importing Flutter or platform code. A developer literally cannot break the dependency rule — the analyzer catches it.
-- **Independent testing**: `domain` has tests that run without a Flutter SDK. `data` and `ble` each have their own test suites. Total: **342 test calls across 35 test files, 0 analyzer issues**.
+- **Independent testing**: `domain` has tests that run without a Flutter SDK. `data` and `ble` each have their own test suites. **333 tests passed across 5 packages** in the fresh 2026-05-26 run (domain 292, data 3, bridge 3, ble 34, ui 1), 0 analyzer issues.
 - **Future-proof**: When BLE accessory hardware ships, only `ble` and the native engines change. `domain` (validation, safety policies) and `data` (persistence) remain untouched.
 
 ---
@@ -320,7 +320,7 @@ DEVICE_STOP        Device-initiated stop: BATTERY_CRITICAL | THERMAL_CRITICAL | 
 | `data`    | SQLite repositories, export generator                                                     |
 | `ble`     | BLE adapter, device state machine, group coordinator                                      |
 | `bridge`  | Contract tests, payload serialization                                                     |
-| **Total** | **342 `test()`/`testWidgets()` calls across 35 test files, 0 analyzer issues**            |
+| **Total** | **333 tests passed across 5 packages (real `flutter test` run 2026-05-26), 0 analyzer issues** |
 
 ### CI Pipeline (GitHub Actions)
 
@@ -330,7 +330,9 @@ DEVICE_STOP        Device-initiated stop: BATTERY_CRITICAL | THERMAL_CRITICAL | 
 | **Build Android APK** | Java 17 → `flutter build apk --debug` → upload artifact              |
 | **Build iOS**         | `pod install` → `flutter build ios --no-codesign --simulator`        |
 
-![Light Routines Flutter Test — all passing](../Test-Evidence/lightroutines-flutter-test.png)
+![Light Routines Flutter Test — 5 packages, 333 tests passed, 0 failed (real run, 2026-05-26)](../Test-Evidence/lightroutines-flutter-test.png)
+
+> The numbers above are from a fresh `flutter test` run across the 5 packages on 2026-05-26 — `domain: 292`, `data: 3`, `bridge: 3`, `ble: 34`, `ui: 1`. Older copies of this page cited "278+" or "342" — 333 is the green-bar count from the actual run.
 
 ---
 

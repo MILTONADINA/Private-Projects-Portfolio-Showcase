@@ -30,7 +30,19 @@ $ find . -name "*_test.dart" -not -path "*/.dart_tool/*" \
     | xargs grep -hE "^\s*(test|testWidgets)\s*\(" | wc -l
 342
 
-  -> 342 test() / testWidgets() call sites
+  -> 342 test()/testWidgets() call SITES (syntactic grep count)
+
+  Real green-bar count from `flutter test` per package on 2026-05-26:
+    domain: 292 passed
+    data:     3 passed
+    bridge:   3 passed
+    ble:     34 passed
+    ui:       1 passed
+    TOTAL:  333 passed, 0 failed
+
+  The grep over-counts: some `test(` call sites are helpers inside
+  `group(...)` blocks, not standalone tests. The 333 figure from
+  running `flutter test` is the authoritative number.
 
 ----------------------------------------------------------------
 3. Distribution by package
@@ -57,7 +69,7 @@ ci.yml
 Notes
 ----------------------------------------------------------------
 - Counts are deterministic from the source tree.
-- An older screenshot (lightroutines-flutter-test.png) showing
-  "278 tests all passing" reflects an earlier point; current
-  call-site count (342) is higher.
+- The current screenshot (lightroutines-flutter-test.png) reflects
+  the real 2026-05-26 `flutter test` run showing 333 tests passed
+  across 5 packages (replaces an older PNG that showed 278).
 - 0 analyzer issues across all packages per blueprint_v1.2.md.
