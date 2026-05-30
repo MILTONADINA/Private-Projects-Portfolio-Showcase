@@ -201,11 +201,11 @@ Real workflows running on push, PR, and scheduled cron:
 
 CodeQL was evaluated and explicitly deferred (D-019 in the decision log): Semgrep OSS rulesets cover the same ground on the JS/TS surface without requiring the $49/committer/month GitHub Advanced Security subscription. Decision is revisitable at Phase 6 pre-launch hardening.
 
-See [`../Security-Evidence/`](../Security-Evidence) for sanitized excerpts of each workflow.
+See [`../Security-Evidence/`](../BrightPath/security/ci) for sanitized excerpts of each workflow.
 
 ### Test Evidence
 
-![Flourish — real `pnpm test` 2026-05-28: 45 Turbo tasks, 1,278 tests passed across 25 workspaces, 0 failed](../Test-Evidence/flourish-test-passing.png)
+![Flourish — real `pnpm test` 2026-05-28: 45 Turbo tasks, 1,278 tests passed across 25 workspaces, 0 failed](./flourish-test-passing.png)
 
 > Largest passing surfaces: `@flourish/api` 476 tests, `@flourish/validation` 173, `@flourish/clinical-engine` 80, `@flourish/clinical-content` 60, `@flourish/client-core` 53. Reproducible: `git clone MILTONADINA/Flourish && pnpm install && pnpm test`.
 
@@ -269,3 +269,13 @@ See [`../Security-Evidence/`](../Security-Evidence) for sanitized excerpts of ea
 [← Back to Portfolio](../README.md)
 
 </div>
+
+---
+
+## In this folder
+<!-- in-this-folder -->
+
+Everything documenting this project lives here:
+
+- [`flourish-test-inventory.txt`](./flourish-test-inventory.txt) — 📋 source-tree / test inventory
+- [`flourish-test-passing.png`](./flourish-test-passing.png) — 🖼️ test-run screenshot

@@ -11,8 +11,8 @@ patterns, and *real, dated, reproducible* test-run screenshots that prove the de
 <br/>
 
 [![Systems](https://img.shields.io/badge/6_Systems-Documented-0078D4?style=for-the-badge)](#the-portfolio)
-[![Tests](https://img.shields.io/badge/Real_Test_Evidence-2,200+_passing-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](./Test-Evidence)
-[![Security](https://img.shields.io/badge/AppSec-OWASP_·_SAST_·_DAST-dc2626?style=for-the-badge&logo=hackthebox&logoColor=white)](./Security-Evidence)
+[![Tests](https://img.shields.io/badge/Real_Test_Evidence-2,200+_passing-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](#portfolio-at-a-glance)
+[![Security](https://img.shields.io/badge/AppSec-OWASP_·_SAST_·_DAST-dc2626?style=for-the-badge&logo=hackthebox&logoColor=white)](./BrightPath/security)
 [![Languages](https://img.shields.io/badge/Polyglot-TS_·_Dart_·_Java_·_Rust-8B5CF6?style=for-the-badge)](#technologies)
 
 [**BrightPath**](./BrightPath) ·
@@ -55,7 +55,7 @@ xychart-beta
     bar [260, 1278, 354, 309, 3]
 ```
 
-<sub>*BrightPath bar = a 7-category slice (260) run live; the full repo surface is **2,228 test files / 19,639 `it`/`test()` cases**. Each number above is a real run captured in [Test-Evidence](./Test-Evidence), not an estimate.</sub>
+<sub>*BrightPath bar = a 7-category slice (260) run live; the full repo surface is **2,228 test files / 19,639 `it`/`test()` cases**. Each number above is a real run captured in [Test-Evidence](#portfolio-at-a-glance), not an estimate.</sub>
 
 | Portfolio metric | Value |
 |---|---|
@@ -69,16 +69,14 @@ xychart-beta
 
 ---
 
-## Cross-cutting engineering
+## Evidence & security artifacts
 
-| Folder | What's inside |
-|--------|---------------|
-| [**Security**](./security) | A **STRIDE threat model + data-flow diagram** (JWT-derived tenant scope, RLS, append-only audit log, HMAC webhooks) and a **real OWASP ZAP DAST run** against OWASP Juice Shop with triage + remediation (raw `zap.json`/`zap.html`) |
-| [**Security Patterns**](./Security-Patterns) | JWT, bcrypt, multi-tenant RLS, XSS/CSRF mitigation, rate limiting, GDPR/COPPA/HIPAA patterns used across projects |
-| [**Security Evidence**](./Security-Evidence) | Sanitized excerpts of *real* CI workflows — Semgrep SAST, gitleaks, CycloneDX SBOM, Playwright + CSP, BrightPath RLS policy examples |
-| [**Test Evidence**](./Test-Evidence) | Dated, reproducible test-run screenshots + source-tree inventories for every system |
+Every project folder is **self-contained** — its architecture notes, database schema,
+dated test-run screenshots, and source-tree inventory live inside that project's directory.
+The deepest application-security work (a **STRIDE threat model**, a real **OWASP ZAP DAST**
+report, RLS policy examples, and the Semgrep/gitleaks/SBOM CI configs) lives under
+[`BrightPath/security/`](./BrightPath/security).
 
----
 
 ## Technologies
 

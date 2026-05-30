@@ -16,7 +16,7 @@ _How I secure real client applications — from authentication to database-level
 
 ## Tooling — in production vs. evaluated
 
-Honest framing of what's actually running in CI versus what's been used manually or evaluated for fit. Sanitized workflow excerpts for the "in production" entries live in [`../Security-Evidence/`](../Security-Evidence).
+Honest framing of what's actually running in CI versus what's been used manually or evaluated for fit. Sanitized workflow excerpts for the "in production" entries live in [`../Security-Evidence/`](./ci).
 
 ### In production (gated in CI on push, PR, or scheduled cron)
 

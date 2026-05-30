@@ -261,7 +261,7 @@ graph TB
     style UserCtx fill:#0891b2,color:#fff
 ```
 
-The policy lives at the database engine — even an authentication-bypass bug in the application layer cannot return another tenant's rows, because PostgreSQL itself filters them out before they ever leave the database. Sanitized real-policy excerpts are committed in [`Security-Evidence/brightpath-rls-examples.sql`](../Security-Evidence/brightpath-rls-examples.sql).
+The policy lives at the database engine — even an authentication-bypass bug in the application layer cannot return another tenant's rows, because PostgreSQL itself filters them out before they ever leave the database. Sanitized real-policy excerpts are committed in [`Security-Evidence/brightpath-rls-examples.sql`](./security/rls/brightpath-rls-examples.sql).
 
 ---
 
@@ -336,7 +336,7 @@ Multi-provider payment orchestration via Supabase Edge Functions:
 | `deploy-staging.yml`    | Push to develop | Staging deployment              |
 | `deploy-production.yml` | Push to main    | Production deployment           |
 
-![BrightPath Vitest — real 2026-05-29 run across 7 test categories (security/a11y/i18n/boundary/regression/rate-limiting/smoke): 19 files, 260/260 tests passed. Repo-wide surface: 2,228 test files / 19,639 it/test() call sites.](../Test-Evidence/brightpath-vitest-passing.png)
+![BrightPath Vitest — real 2026-05-29 run across 7 test categories (security/a11y/i18n/boundary/regression/rate-limiting/smoke): 19 files, 260/260 tests passed. Repo-wide surface: 2,228 test files / 19,639 it/test() call sites.](./brightpath-vitest-passing.png)
 
 > The screenshot above is from real `npx vitest run` commands executed against `apps/portal/src/tests/<category>` on 2026-05-29. The figures are verifiable: re-clone, run the same commands, get the same green counts. Full-suite run wasn't feasible in one session (2,228 test files); the categories shown were picked to span correctness (boundary/regression), security (security/rate-limiting), and quality (a11y/i18n/smoke).
 
@@ -368,3 +368,29 @@ The application implements a Progressive Web App with:
 [← Back to Portfolio](../README.md)
 
 </div>
+
+---
+
+## In this folder
+<!-- in-this-folder -->
+
+Everything documenting this project lives here:
+
+- [`brightpath-test-inventory.txt`](./brightpath-test-inventory.txt) — 📋 source-tree / test inventory
+- [`brightpath-vitest-passing.png`](./brightpath-vitest-passing.png) — 🖼️ test-run screenshot
+- [`security/patterns.md`](./security/patterns.md) — 📄 notes
+- [`security/ci/dependency-audit-workflow.yml`](./security/ci/dependency-audit-workflow.yml) — ⚙️ CI security config
+- [`security/ci/gitleaks-config.yml`](./security/ci/gitleaks-config.yml) — ⚙️ CI security config
+- [`security/ci/playwright-a11y-example.spec.ts`](./security/ci/playwright-a11y-example.spec.ts) — 🧪 Playwright security spec
+- [`security/ci/playwright-csp-example.spec.ts`](./security/ci/playwright-csp-example.spec.ts) — 🧪 Playwright security spec
+- [`security/ci/sbom-workflow.yml`](./security/ci/sbom-workflow.yml) — ⚙️ CI security config
+- [`security/ci/semgrep-config.yml`](./security/ci/semgrep-config.yml) — ⚙️ CI security config
+- [`security/rls/brightpath-rls-examples.sql`](./security/rls/brightpath-rls-examples.sql) — 🔐 RLS policy examples
+- [`security/scans/OWASP-JuiceShop-ZAP-assessment.md`](./security/scans/OWASP-JuiceShop-ZAP-assessment.md) — 🔎 OWASP ZAP DAST output
+- [`security/scans/zap.html`](./security/scans/zap.html) — 🔎 OWASP ZAP DAST output
+- [`security/scans/zap.json`](./security/scans/zap.json) — 🔎 OWASP ZAP DAST output
+- [`security/scans/zap.md`](./security/scans/zap.md) — 🔎 OWASP ZAP DAST output
+- [`security/threat-models/BrightPath-STRIDE-threat-model.md`](./security/threat-models/BrightPath-STRIDE-threat-model.md) — 🧭 STRIDE threat model
+
+Companion modules: [SchoolGrid](./SchoolGrid) · [Exam Analytics](./ExamAnalytics).
+Deep AppSec work is under [`security/`](./security) — STRIDE model, OWASP ZAP report, RLS examples, and CI configs.

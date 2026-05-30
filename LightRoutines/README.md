@@ -330,7 +330,7 @@ DEVICE_STOP        Device-initiated stop: BATTERY_CRITICAL | THERMAL_CRITICAL | 
 | **Build Android APK** | Java 17 → `flutter build apk --debug` → upload artifact              |
 | **Build iOS**         | `pod install` → `flutter build ios --no-codesign --simulator`        |
 
-![Light Routines Flutter Test — 5 packages, 354 tests passed, 0 failed (real run, 2026-05-29)](../Test-Evidence/lightroutines-flutter-test.png)
+![Light Routines Flutter Test — 5 packages, 354 tests passed, 0 failed (real run, 2026-05-29)](./lightroutines-flutter-test.png)
 
 > The numbers above are from a fresh `flutter test` run across the 5 packages on 2026-05-29 — `domain: 313`, `data: 3`, `bridge: 3`, `ble: 34`, `ui: 1`. 354 is the green-bar count from the actual run.
 
@@ -359,3 +359,13 @@ DEVICE_STOP        Device-initiated stop: BATTERY_CRITICAL | THERMAL_CRITICAL | 
 [← Back to Portfolio](../README.md)
 
 </div>
+
+---
+
+## In this folder
+<!-- in-this-folder -->
+
+Everything documenting this project lives here:
+
+- [`lightroutines-flutter-test.png`](./lightroutines-flutter-test.png) — 🖼️ test-run screenshot
+- [`lightroutines-test-inventory.txt`](./lightroutines-test-inventory.txt) — 📋 source-tree / test inventory

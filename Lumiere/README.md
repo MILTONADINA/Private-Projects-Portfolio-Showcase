@@ -439,13 +439,13 @@ This enables content rollback and change tracking without a full revision system
 
 ## Live Rendering — Public Home Page
 
-![Lumière — `/en` home page rendered by Next.js 16 (real SSR capture via headless Chromium, 2026-05-28)](../Test-Evidence/lumiere-home.png)
+![Lumière — `/en` home page rendered by Next.js 16 (real SSR capture via headless Chromium, 2026-05-28)](./lumiere-home.png)
 
 > Captured against a fresh `next dev` build on 2026-05-28. The Server Component render reaches the page in ~14 s on a cold start (Turbopack); subsequent navigations are sub-second. The home page is composed of an RSC hero section + statically-bundled "About / Services / Our Work / CTA" segments — no client-side data fetch on first paint.
 
 ## Validation
 
-![Lumière Unit Tests — 5 passed, 0 failed](../Test-Evidence/lumiere-smoke-check.png)
+![Lumière Unit Tests — 5 passed, 0 failed](./lumiere-smoke-check.png)
 
 ---
 
@@ -454,3 +454,13 @@ This enables content rollback and change tracking without a full revision system
 [← Back to Portfolio](../README.md)
 
 </div>
+
+---
+
+## In this folder
+<!-- in-this-folder -->
+
+Everything documenting this project lives here:
+
+- [`lumiere-home.png`](./lumiere-home.png) — 🖼️ test-run screenshot
+- [`lumiere-smoke-check.png`](./lumiere-smoke-check.png) — 🖼️ test-run screenshot
