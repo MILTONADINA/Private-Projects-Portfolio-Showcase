@@ -2,7 +2,7 @@
 BrightPath — Test Surface Inventory (auditable from source)
 ================================================================
 
-Date captured: 2026-05-26
+Date captured: 2026-05-29
 Source: private repo MILTONADINA/BrightPath, depth-1 clone
 Method: deterministic file enumeration + grep on real test files
 
@@ -12,16 +12,16 @@ Method: deterministic file enumeration + grep on real test files
 $ find . -type d -name node_modules -prune \
        -o -type f \( -name "*.test.ts" -o -name "*.test.tsx" \) -print \
        | grep -v node_modules | wc -l
-2229
+2228
 
-  -> 2,229 .test.ts / .test.tsx files
+  -> 2,228 .test.ts / .test.tsx files
 
 $ find . -type d -name node_modules -prune \
        -o -type f \( -name "*.test.ts" -o -name "*.test.tsx" \) -print \
        | grep -v node_modules | xargs grep -hE "^\s*(it|test)\s*\(" | wc -l
-19697
+19639
 
-  -> 19,697 it()/test() call sites
+  -> 19,639 it()/test() call sites
 
 ----------------------------------------------------------------
 2. Playwright E2E surface

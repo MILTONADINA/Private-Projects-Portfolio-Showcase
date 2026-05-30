@@ -111,15 +111,15 @@ All accounted for from day one. The GDPR architecture is in place; EU deployment
 
 ### Compliance Control Matrix
 
-Mapping of regulation → control surfaces that exist in the codebase today. Counts in parentheses are the number of repo files referencing each regulation by name (real grep counts: HIPAA=62, COPPA=89, GDPR=22, CCPA=8, MHMDA=6, FDA-SaMD=multiple ADRs).
+Mapping of regulation → control surfaces that exist in the codebase today. Counts in parentheses are the number of repo files referencing each regulation by name (real grep counts: HIPAA=75, COPPA=154, GDPR=33, CCPA=12, MHMDA=6, FDA-SaMD=multiple ADRs).
 
 ```mermaid
 graph LR
     subgraph Regs["Regulations"]
-        HIPAA["HIPAA<br/>(62 files)"]
-        COPPA["COPPA<br/>(89 files)"]
-        GDPR["GDPR<br/>(22 files)"]
-        CCPA["CCPA<br/>(8 files)"]
+        HIPAA["HIPAA<br/>(75 files)"]
+        COPPA["COPPA<br/>(154 files)"]
+        GDPR["GDPR<br/>(33 files)"]
+        CCPA["CCPA<br/>(12 files)"]
         MHMDA["MHMDA<br/>(6 files)"]
         FDA["FDA SaMD<br/>(stay-out posture)"]
     end
@@ -205,9 +205,9 @@ See [`../Security-Evidence/`](../Security-Evidence) for sanitized excerpts of ea
 
 ### Test Evidence
 
-![Flourish — real `pnpm test` 2026-05-28: 45 Turbo tasks, 1,042 tests passed across 15 workspaces, 0 failed](../Test-Evidence/flourish-test-passing.png)
+![Flourish — real `pnpm test` 2026-05-28: 45 Turbo tasks, 1,278 tests passed across 25 workspaces, 0 failed](../Test-Evidence/flourish-test-passing.png)
 
-> Largest passing surfaces: `@flourish/api` 449 tests, `@flourish/validation` 173, `@flourish/clinical-engine` 80, `@flourish/clinical-content` 60. Reproducible: `git clone MILTONADINA/Flourish && pnpm install && pnpm test`.
+> Largest passing surfaces: `@flourish/api` 476 tests, `@flourish/validation` 173, `@flourish/clinical-engine` 80, `@flourish/clinical-content` 60, `@flourish/client-core` 53. Reproducible: `git clone MILTONADINA/Flourish && pnpm install && pnpm test`.
 
 ---
 

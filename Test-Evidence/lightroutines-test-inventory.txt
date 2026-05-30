@@ -2,7 +2,7 @@
 Light Routines — Test Surface Inventory (auditable from source)
 ================================================================
 
-Date captured: 2026-05-26
+Date captured: 2026-05-29
 Source: private repo MILTONADINA/StartUP, depth-1 clone
 Method: deterministic file enumeration + grep on real test files
 Test runner: flutter_test (Flutter SDK 3.19+)
@@ -32,8 +32,8 @@ $ find . -name "*_test.dart" -not -path "*/.dart_tool/*" \
 
   -> 342 test()/testWidgets() call SITES (syntactic grep count)
 
-  Real green-bar count from `flutter test` per package on 2026-05-26:
-    domain: 292 passed
+  Real green-bar count from `flutter test` per package on 2026-05-29:
+    domain: 313 passed
     data:     3 passed
     bridge:   3 passed
     ble:     34 passed
@@ -70,6 +70,6 @@ Notes
 ----------------------------------------------------------------
 - Counts are deterministic from the source tree.
 - The current screenshot (lightroutines-flutter-test.png) reflects
-  the real 2026-05-26 `flutter test` run showing 333 tests passed
+  the real 2026-05-29 `flutter test` run showing 354 tests passed
   across 5 packages (replaces an older PNG that showed 278).
 - 0 analyzer issues across all packages per blueprint_v1.2.md.

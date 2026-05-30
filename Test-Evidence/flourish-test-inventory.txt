@@ -2,7 +2,7 @@
 Flourish — Test Surface Inventory (auditable from source)
 ================================================================
 
-Date captured: 2026-05-26
+Date captured: 2026-05-29
 Source: private repo MILTONADINA/Flourish, depth-1 clone
 Method: deterministic file enumeration + grep on real test files
 Test runner: Vitest 4.1.5 (Jest also present)
@@ -15,13 +15,13 @@ $ find . -type d -name node_modules -prune \
        | grep -v node_modules | wc -l
 133
 
-  -> 133 test files
+  -> 138 test files
 
 ----------------------------------------------------------------
 2. it()/test() call count
 ----------------------------------------------------------------
 1121
-  -> 1,121 it() / test() call sites
+  -> 1,153 it() / test() call sites
 
 ----------------------------------------------------------------
 3. CI workflows (real .github/workflows/)
@@ -51,6 +51,6 @@ Decision-log entries (docs/00-project/decision-log.md, ^## D-):
 Notes
 ----------------------------------------------------------------
 - Flourish is in Phase 0 (foundation / monorepo scaffold).
-- 1,121 test call sites with 133 files in Phase 0 reflects the
+- 1,153 test call sites with 133 files in Phase 0 reflects the
   test-first discipline established at foundation; not a launched product.
 - Client identity remains REDACTED in all public artifacts.

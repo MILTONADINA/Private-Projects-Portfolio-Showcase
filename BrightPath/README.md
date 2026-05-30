@@ -49,7 +49,7 @@ A production-grade, multi-tenant SaaS platform built with a modern stack optimiz
 | **Frontend**       | React 18, TypeScript, Vite               | Component-based, type-safe, fast HMR              |
 | **UI**             | Tailwind CSS, shadcn/ui, MUI Data Grid   | Utility-first styling + enterprise data tables    |
 | **Backend**        | Supabase (PostgreSQL, Auth, RLS)         | Managed backend with database-level security      |
-| **Edge Functions** | 66 Deno functions (Supabase Edge)        | Serverless business logic (payments, comms, GDPR) |
+| **Edge Functions** | 69 Deno functions (Supabase Edge)        | Serverless business logic (payments, comms, GDPR) |
 | **Payments**       | Stripe, M-Pesa (Daraja), Airtel, MTN     | Multi-provider payment orchestration              |
 | **Communication**  | SMS, WhatsApp, Email (SES)               | Multi-channel parent/staff notifications          |
 | **Testing**        | Vitest, Playwright, Testing Library      | Unit + E2E + accessibility testing                |
@@ -68,7 +68,7 @@ graph TB
         SW["Service Worker<br/>Offline Packs + Sync Queue"]
     end
 
-    subgraph Edge["Edge Layer (66 Deno Functions)"]
+    subgraph Edge["Edge Layer (69 Deno Functions)"]
         PayFn["Payment Functions<br/>M-Pesa · Stripe · Airtel · MTN"]
         CommFn["Communication Functions<br/>SMS · WhatsApp · Email"]
         AuthFn["Auth Functions<br/>TOTP · WebAuthn · OTP"]
@@ -112,7 +112,15 @@ graph TB
 
 ## Database Design
 
-The database implements **58 sequential migrations** with comprehensive Row-Level Security across **1,026 policies**. The full schema spans 398 tables; the diagram below shows the multi-tenant core that drives the rest.
+The database implements **82 sequential migrations** with comprehensive Row-Level Security across **1,063 policies**. The full schema spans **403 tables**; the diagram below shows the multi-tenant core that drives the rest.
+
+```mermaid
+pie showData title BrightPath database scale (verified 2026-05-29)
+    "RLS policies" : 1063
+    "Tables" : 403
+    "Migrations" : 82
+    "Edge functions" : 69
+```
 
 ### Entity Relationship Diagram
 
@@ -213,7 +221,7 @@ erDiagram
 
 - **Cost**: Separate databases per school is prohibitively expensive in the African market. A single PostgreSQL instance with RLS provides the same isolation guarantees at a fraction of the cost.
 - **Enforcement depth**: RLS is enforced at the database engine level — even a bug in the application layer cannot expose cross-tenant data.
-- **Implementation scale**: 316 RLS policy references across 34 migration files. Every table with tenant-scoped data has policies that derive `tenant_id` server-side (never trusted from the client).
+- **Implementation scale**: **1,063 RLS policies across 82 migration files**. Every table with tenant-scoped data has policies that derive `tenant_id` server-side (never trusted from the client).
 
 ### RLS Policy Pattern
 
@@ -328,9 +336,9 @@ Multi-provider payment orchestration via Supabase Edge Functions:
 | `deploy-staging.yml`    | Push to develop | Staging deployment              |
 | `deploy-production.yml` | Push to main    | Production deployment           |
 
-![BrightPath Vitest — fresh 2026-05-28 run across 7 test categories (security/a11y/i18n/boundary/regression/rate-limiting/smoke): 19 files, 260/260 tests passed. Full portal surface 705 *.test.* files; repo-wide inventory 2,229 files / 19,697 it/test() call sites.](../Test-Evidence/brightpath-vitest-passing.png)
+![BrightPath Vitest — real 2026-05-29 run across 7 test categories (security/a11y/i18n/boundary/regression/rate-limiting/smoke): 19 files, 260/260 tests passed. Repo-wide surface: 2,228 test files / 19,639 it/test() call sites.](../Test-Evidence/brightpath-vitest-passing.png)
 
-> The screenshot above is from real `npx vitest run` commands executed against `apps/portal/src/tests/<category>` on 2026-05-28. The figures are verifiable: re-clone, run the same commands, get the same green counts. Full-suite run wasn't feasible in one session (2,229 test files); the categories shown were picked to span correctness (boundary/regression), security (security/rate-limiting), and quality (a11y/i18n/smoke).
+> The screenshot above is from real `npx vitest run` commands executed against `apps/portal/src/tests/<category>` on 2026-05-29. The figures are verifiable: re-clone, run the same commands, get the same green counts. Full-suite run wasn't feasible in one session (2,228 test files); the categories shown were picked to span correctness (boundary/regression), security (security/rate-limiting), and quality (a11y/i18n/smoke).
 
 ---
 

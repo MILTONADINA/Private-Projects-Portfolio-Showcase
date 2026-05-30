@@ -121,7 +121,7 @@ graph TB
 
 **BrightPath** (Multi-tenant):
 
-- 316 RLS policy references across 34 migrations
+- 1,063 RLS policies across 34 migrations
 - `tenant_id` derived server-side via `auth.uid()` → `user_organizations` lookup
 - Client **never** sends a `tenant_id` — even a compromised client cannot access another tenant's data
 
