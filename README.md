@@ -73,6 +73,7 @@ xychart-beta
 
 | Folder | What's inside |
 |--------|---------------|
+| [**Security**](./security) | A **STRIDE threat model + data-flow diagram** (JWT-derived tenant scope, RLS, append-only audit log, HMAC webhooks) and a **real OWASP ZAP DAST run** against OWASP Juice Shop with triage + remediation (raw `zap.json`/`zap.html`) |
 | [**Security Patterns**](./Security-Patterns) | JWT, bcrypt, multi-tenant RLS, XSS/CSRF mitigation, rate limiting, GDPR/COPPA/HIPAA patterns used across projects |
 | [**Security Evidence**](./Security-Evidence) | Sanitized excerpts of *real* CI workflows — Semgrep SAST, gitleaks, CycloneDX SBOM, Playwright + CSP, BrightPath RLS policy examples |
 | [**Test Evidence**](./Test-Evidence) | Dated, reproducible test-run screenshots + source-tree inventories for every system |
