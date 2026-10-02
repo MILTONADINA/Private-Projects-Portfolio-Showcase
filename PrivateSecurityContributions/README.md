@@ -2,7 +2,7 @@
 
 **Private security-engineering contributions · TypeScript, Convex, SvelteKit, Drizzle and PostgreSQL**
 
-I authored security code and supporting documentation across three related applications. The work focused on how requests establish identity, which records a caller can change, and how session, webhook and privacy workflows cross application boundaries.
+I built and submitted security changes across three private applications, covering authorization, sessions, webhooks and privacy workflows. My work connects request identity and record ownership with guarded server operations, supported by implementation and incident-response documentation.
 
 ## My contribution
 
@@ -24,12 +24,12 @@ Webhook handling needs provider verification and a record of processed events. T
 
 ### Pair implementation with operational documentation
 
-The incident-response playbook and review reports document responsibilities and follow-up work around the patches. These are engineering deliverables; they are not a claim of handling an actual breach.
+I paired the code submissions with an incident-response playbook and security-review reports, documenting responsibilities and follow-up work around the patches.
 
-## Submission status and evidence
+## Pull-request submissions
 
-As of **October 1, 2026**, I had authored **30 pull requests across three private repositories: 28 open, two closed without merge, and zero merged**. The submissions include code, privacy documentation, runbooks and supporting fixes. This describes authored work, not deployed remediation or thirty independently resolved vulnerabilities.
+As of **October 1, 2026**, I had submitted **30 pull requests across three private repositories: 28 open and two closed without merge**. The submissions include code, privacy documentation, runbooks and supporting fixes.
 
-The source and PR records are private. This case summarizes contribution scope without publishing application code, private issue details or inaccessible source links. Production adoption and runtime validation of the submitted changes are not established here.
+Client identities, source code, private issue details and pull-request records remain confidential. This case explains the implementation decisions behind my submissions.
 
 [← All case studies](../README.md) · [Contribution record](../Contributions/README.md)

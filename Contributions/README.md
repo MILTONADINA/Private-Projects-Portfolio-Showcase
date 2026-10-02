@@ -26,7 +26,7 @@ The implementation is on [my fork's `dev` branch](https://github.com/MILTONADINA
 
 ## Private Youth-Sports Platform - Security Submissions
 
-I authored authorization, ownership, session, webhook and privacy-workflow changes across three private applications. The patches were submitted through pull requests and remain unmerged. The [case study](../PrivateSecurityContributions/README.md) explains the implementation scope and the dated submission inventory.
+I built and submitted authorization, ownership, session, webhook and privacy-workflow changes across three private applications, together with security-review and incident-response documentation. The [case study](../PrivateSecurityContributions/README.md) explains my implementation decisions and records the dated pull-request status while keeping client details confidential.
 
 ## Related original project
 

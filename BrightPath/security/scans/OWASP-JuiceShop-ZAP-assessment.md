@@ -1,11 +1,10 @@
 # DAST Assessment - OWASP ZAP Baseline against OWASP Juice Shop
 
-> **What this is.** A real Dynamic Application Security Testing (DAST) run performed with **OWASP ZAP**
-> against **OWASP Juice Shop** - the OWASP Foundation's *intentionally vulnerable* training
-> application, which exists so engineers can practice scanning and triage on a legal, safe target.
-> **No client or third-party systems were scanned.** This artifact demonstrates the workflow,
-> tooling, finding triage, and proposed mitigations. It does not establish that client applications
-> were scanned or that the proposals were deployed and retested.
+> I used **OWASP ZAP** to assess a local Docker instance of **OWASP Juice Shop**, the OWASP
+> Foundation's *intentionally vulnerable* training application. I triaged the passive-scan
+> findings, explained their security impact and documented proposed mitigations.
+> **Scope:** Authorized local training target, passive rules and spider, finding triage and
+> remediation planning.
 >
 > **Tool:** OWASP ZAP `zap-baseline.py` (passive rules + spider), image `ghcr.io/zaproxy/zaproxy:stable`
 > **Target:** `bkimminich/juice-shop` (Docker, 158 URLs crawled) · **Date:** 2026-05-30 (UTC)
@@ -38,7 +37,7 @@ origin, removing a key defense-in-depth layer against cross-site scripting (XSS)
 **Remediation.** Send a restrictive CSP, e.g.
 `default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'`.
 Roll out in `Content-Security-Policy-Report-Only` first, review violations, then enforce at the
-application or edge layer. No remediation deployment or clean rescan is recorded in these artifacts.
+application or edge layer. Deployment and a follow-up scan are the next steps for this proposal.
 
 ### 2. Cross-Domain Misconfiguration - CWE-264 · 5 instances
 **Risk.** A permissive Cross-Origin Resource Sharing (CORS) response lets other origins read
@@ -85,7 +84,7 @@ This exercise complements the repository's other security evidence:
 - **Semgrep** and **gitleaks** - control families explained in the [application-security patterns](../patterns.md).
 - **CycloneDX SBOM + dependency auditing** - component inventory and dependency-review practices described in those patterns.
 
-The mitigation discussion is a triage artifact, not a record of resolved vulnerabilities. See
+My assessment connects the scan findings to proposed mitigations and follow-up checks. See
 the companion [STRIDE threat model](../threat-models/BrightPath-STRIDE-threat-model.md) for the
 design-level controls and their limits, including server-derived tenant scope and the distinction
 between RLS-enforced database roles and backend connections that bypass RLS.

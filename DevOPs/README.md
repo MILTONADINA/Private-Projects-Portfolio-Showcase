@@ -154,7 +154,7 @@ graph TB
     style Refused fill:#000000,color:#fff
 ```
 
-The diagram shows available scripts under `hooks/universal/{pre-tool,post-tool,session-start,session-end}/`, not the active hook set of every installation. At the reviewed revision, the committed Claude configuration wires selected session-start checks, Bash sealed-reference/deployment gates, and a post-edit date-sync hook. Budget, loop-detection, and secret-check scripts are present but are not all wired by that configuration. [Review the exact adapter configuration](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/.claude/settings.json).
+The diagram shows available scripts under `hooks/universal/{pre-tool,post-tool,session-start,session-end}/`; the enabled hooks depend on the installation's configuration. At revision `3ac20df`, the committed Claude configuration enables selected session-start checks, Bash sealed-reference/deployment gates, and a post-edit date-sync hook. Budget, loop-detection, and secret-check scripts are available separately and are not all enabled by that configuration. [View the adapter configuration](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/.claude/settings.json).
 
 ---
 

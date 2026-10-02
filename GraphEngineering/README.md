@@ -17,9 +17,9 @@ _A collaborative public project connecting persistent context, Laya/Jev decision
 
 **Active development, September 2026–Present.** I collaborate with the original author of [NdahayoKevin25/graph-engineering](https://github.com/NdahayoKevin25/graph-engineering) and develop the extended public fork. The original project supplies the template/scaffolding foundation; my contributions add the TypeScript context/execution engine, SQLite retrieval and reviewed memory, React dashboard, MCP access, local Laya service, hosted Jev adapter, and template/authentication work. The [platform addition](https://github.com/MILTONADINA/graph-engineering/commit/2ce7afbf6635d303fb79d3c1e9b76c27ad1651e6) identifies that work in the public history.
 
-Use the fork's **[`dev` branch](https://github.com/MILTONADINA/graph-engineering/tree/dev)** for this work. As checked October 1, 2026, upstream [PR #1](https://github.com/NdahayoKevin25/graph-engineering/pull/1) and [PR #2](https://github.com/NdahayoKevin25/graph-engineering/pull/2) are **open**. The fork releases below are merged into my fork; they are not upstream acceptance.
+Use the fork's **[`dev` branch](https://github.com/MILTONADINA/graph-engineering/tree/dev)** for this work. As of October 1, 2026, upstream [PR #1](https://github.com/NdahayoKevin25/graph-engineering/pull/1) and [PR #2](https://github.com/NdahayoKevin25/graph-engineering/pull/2) are **open**. The releases below are merged into my fork.
 
-The current reviewed source is [`5b88af9`](https://github.com/MILTONADINA/graph-engineering/tree/5b88af9787f9da00e312268847aee27053be8555). The original `create-graph-app` package has an MIT license; the platform has no project-root license yet, so this page does not extend that package license to the whole project.
+The implementation described here is at revision [`5b88af9`](https://github.com/MILTONADINA/graph-engineering/tree/5b88af9787f9da00e312268847aee27053be8555). The original `create-graph-app` package is MIT licensed; the platform does not yet have a project-root license.
 
 ## The Problem
 

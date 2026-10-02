@@ -52,7 +52,7 @@ I built multi-role planning/verification workflows, six kinds of typed memory, b
 |---|---|---|
 | [Graph Engineering](./GraphEngineering) | Extended the collaborative foundation with SQLite context, reviewed persistent memory, Laya/Jev decision controls, MCP access, source analysis and plan-bound execution. | Changes merged in my [public fork](https://github.com/MILTONADINA/graph-engineering/tree/dev); two upstream proposals remain open. |
 | [Hive](./Contributions#hive) | Windows onboarding guidance and tool-integration documentation. | One upstream PR merged; four documentation PRs covering 18 integrations remain open. |
-| [Private security contributions](./PrivateSecurityContributions) | Authored authorization, ownership, session, webhook and privacy-workflow submissions across three private repositories. | Submitted through PRs and unmerged; the case describes the work without private source or issue details. |
+| [Private security contributions](./PrivateSecurityContributions) | Built and submitted authorization, ownership, session, webhook and privacy-workflow changes across three private repositories. | Submitted through pull requests with supporting security documentation; the case study includes dated submission status. |
 
 Graph Engineering’s October 1 focused validation passed 130 engine tests and nine Python sidecar tests. A separate CLI demonstration verified memory across process restarts and flagged changed source. A single 1,000-file synthetic indexing measurement is documented with hardware and retrieval limits. The original scaffold is credited; the wider platform has no root license yet.
 

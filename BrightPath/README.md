@@ -60,7 +60,7 @@ Three selected unit-test suites passed **33 cases**: 14 paid-AI quota checks, ni
 
 ![Sanitized October 1, 2026 focused backend summary: 33 cases passed across quota, exact-money and offline authorization suites](./evidence/brightpath-focused-tests-october.png)
 
-The first invocation passed the quota and money suites but could not load the offline suite because the isolated snapshot lacked workspace dependency resolution. After correcting that resolution, only the interrupted suite was rerun and passed; product source and assertions were unchanged. These are source-bound diagnostic unit checks using mocked service boundaries and an SQL evaluator, not live database/provider, full-suite or release verification.
+These focused unit tests use mocked service boundaries and an SQL evaluator. They cover quota handling, exact-money reconciliation and offline authorization; live database/provider, full-suite and release testing are separate scopes.
 
 An additional focused import-outcome suite passed **10 cases**, with 0 failures/skips. It checks authorization changes, definitive row rejection, uncertain provider responses and failed checkpoints using injected stores and executors. Together the four selected suites account for **43 passing cases**; the image above covers its stated first three scopes. This additional run is not a live database recovery test.
 

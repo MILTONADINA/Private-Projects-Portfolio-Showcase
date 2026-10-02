@@ -13,10 +13,10 @@ My security work combines application design, implementation boundaries and prac
 
 ## Reading the results
 
-The Juice Shop baseline recorded ten alerts across 158 crawled URLs: two medium, five low and three informational. It used a spider and passive rules. The report discusses CSP, CORS and cross-origin isolation; proposed mitigations are not represented as deployed fixes or a clean rescan.
+The Juice Shop baseline recorded ten alerts across 158 crawled URLs: two medium, five low and three informational. It used a spider and passive rules. I investigated CSP, CORS and cross-origin isolation findings and documented proposed mitigations. The exercise covers finding triage and remediation planning.
 
-The threat model is a design artifact. Where a control depends on deployment settings, identity-provider configuration, endpoint coverage or an operational process, the table identifies that boundary rather than treating it as already verified. Short token lifetimes do not prevent phishing, and structured logs require field and sink review before claiming sensitive-data exclusion.
+The threat model maps design controls and their dependencies. I identify deployment settings, identity-provider configuration, endpoint coverage and operational processes that need follow-up checks. Short token lifetimes do not prevent phishing, and protecting sensitive data in structured logs requires review of the fields and log sinks.
 
-Client CI configurations, literal policies, proprietary test fixtures and private run artifacts are not published here. The patterns describe how I use SAST, secret/dependency checks, SBOM generation and focused tests without presenting client implementation as public sample code.
+Client CI configurations, literal policies, proprietary test fixtures and private run artifacts remain confidential. The patterns explain how I use SAST, secret/dependency checks, SBOM generation and focused tests through abstract examples.
 
 [← BrightPath case](../README.md) · [All case studies](../../README.md)

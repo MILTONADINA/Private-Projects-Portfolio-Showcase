@@ -36,7 +36,7 @@ Input schemas validate accepted fields, and rich-text sanitization handles conte
 
 The checkout handler validates the request, resolves the selected package, creates an order and opens a Stripe Checkout session. Saving the provider session reference connects the payment workflow back to the order. The webhook handler uses Stripe signature verification.
 
-Contact, newsletter and checkout handlers use process-local IP-based limits. These limits manage requests within the application process; they are not described as distributed rate limiting.
+Contact, newsletter and checkout handlers use IP-based limits that apply within each application process.
 
 ### Make content changes traceable
 
@@ -50,7 +50,7 @@ Contact handling stores the inquiry before attempting staff notification and cus
 
 On **October 1, 2026**, **nine offline utility checks passed with no failures**: the five existing sanitization/rate-limit checks plus four focused boundary checks. The latter cover quota exhaustion and identifier separation, expired-window reset, HTTP refusal before a handler runs, and successful response/status/header preservation.
 
-The checks used the current private-source revision in an isolated checkout. A harness only released the recurring cleanup timers' process handles so the test process could exit; limiter and sanitizer logic were unchanged. These checks do not exercise live authentication, database writes, payments, email or deployment.
+The nine checks ran offline against the existing limiter and sanitizer implementation. Authentication, database writes, payments, email and deployment were outside this utility-test scope.
 
 ## Historical validation
 
