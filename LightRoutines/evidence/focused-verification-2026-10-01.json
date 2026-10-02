@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-01",
+  "source_revision": "6587fb62dc870d4e17ef35d62093220ae8d3d9b6",
+  "source_visibility": "private; source code and beta account information are not included",
+  "flutter": "3.47.4",
+  "dart": "3.13.3",
+  "groups": [
+    {
+      "name": "Selected domain policies and beta routine builder",
+      "passed": 56
+    },
+    {
+      "name": "Beta session controller",
+      "passed": 15
+    },
+    {
+      "name": "Actual local Firestore emulator authorization rules",
+      "passed": 44
+    }
+  ],
+  "total": {
+    "passed": 115,
+    "failed": 0,
+    "skipped": 0
+  },
+  "flutter_commands": [
+    {
+      "directory": "packages/domain",
+      "command": "flutter test --no-pub --reporter json test/adult_gate_policy_test.dart test/safety_gate_plan_test.dart test/guardrails_test.dart test/beta_condition_test.dart test/beta_routine_builder_test.dart"
+    },
+    {
+      "directory": "apps/mobile_flutter",
+      "command": "flutter test --no-pub --reporter json test/beta/beta_session_controller_test.dart"
+    }
+  ],
+  "firestore_command": "FIRESTORE_EMULATOR_HOST=127.0.0.1:<owned-port> node node_modules/mocha/bin/mocha.js firestore.rules.test.js --timeout 20000 --reporter json",
+  "firestore_prerequisite": "Firestore emulator v1.21.0 running only on loopback with demo-lightroutines; this run used installed Java26.0.1 and synthetic auth contexts",
+  "limits": [
+    "Selected tests, not the full suite or a new analyzer result",
+    "Controller persistence uses a fake recorder; Firestore rules use the actual local emulator",
+    "No native device, BLE, biometric prompt or hardware timing validation",
+    "No live Firebase, tester account, store API, release signing or deployment operations",
+    "Historical May354 and September395 records are separate evidence"
+  ]
+}

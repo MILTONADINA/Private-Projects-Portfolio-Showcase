@@ -1,49 +1,55 @@
 <div align="center">
 
-# DevOPs + Stratum
+# DevOPs
 
-**Agent Operating System and Memory Backend**
+**Open-Source Agent Workflow and Integrated Local Runtime**
 
-_A verification-first DevOps workflow for AI coding agents — and the context-pruning memory backend that powers it._
+_A verification-first DevOps workflow for AI coding agents, with an integrated proxy, structured memory, and an experimental context-pruning pipeline._
 
 [![Stack](https://img.shields.io/badge/TypeScript-Fastify-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
-[![Edge](https://img.shields.io/badge/Cloudflare_Workers-wrangler-F38020?style=flat-square&logo=cloudflare)](https://workers.cloudflare.com)
-[![Hot path](https://img.shields.io/badge/Rust_+_WASM-CE422B?style=flat-square&logo=rust)](https://www.rust-lang.org)
-[![Memory](https://img.shields.io/badge/Supabase-Pinecone-3FCF8E?style=flat-square&logo=supabase)](https://supabase.com)
+[![Runtime](https://img.shields.io/badge/Runtime-Local_Node.js-339933?style=flat-square&logo=nodedotjs)](https://github.com/MILTONADINA/DevOPs/tree/main/runtime)
+[![Experimental module](https://img.shields.io/badge/Rust_+_WASM-Experimental_hashing-CE422B?style=flat-square&logo=rust)](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/runtime/rust/hot-path/src/lib.rs)
+[![Memory](https://img.shields.io/badge/PostgreSQL-Typed_Memory-4169E1?style=flat-square&logo=postgresql)](https://github.com/MILTONADINA/DevOPs/tree/main/runtime)
 
 </div>
 
 ---
 
-## Status
+## Project and ownership
 
-**Active development.** DevOPs is the productized surface; Stratum is the memory + context-pruning backend it depends on. Both private; both treated as a single project for resume + portfolio purposes.
+**Independent open-source project · Systems Engineer · 2026 to present**
+
+I built DevOPs as a repository-aware workflow and local memory runtime for developers using coding agents. My implementation includes a multi-role coding workflow, completion-claim records, a model gateway, typed memory, source dependency graphs, Git-backed fact checks and the Claude Code adapter.
+
+**Active development.** DevOPs includes an integrated backend under [`runtime/`](https://github.com/MILTONADINA/DevOPs/tree/main/runtime). The [source repository](https://github.com/MILTONADINA/DevOPs) is MIT-licensed. The current direction is one local-first platform, with no hosted service or project subscription. Existing billing-code removal remains in progress. **Claude Code is the implemented adapter**; other agent adapters remain planned.
+
+**Current engineering:** proof-of-work validation binds claims to reproducibility hashes and exit-code evidence; typed memory uses server-trusted foreign-key injection and fail-closed validation; the proxy supports provider-specific usage measurement; and the project analyzer recommends tools from manifest and README indicators. Those recommendations do not establish compliance or resolve unknown security risks. [PR #219](https://github.com/MILTONADINA/DevOPs/pull/219) restricts the local proxy to loopback by default. The KadaneDial pruner remains **shadow-mode**, pending passing judged evaluation; the normal message route forwards the full request. [Fresh scoped checks](verification-2026-10-01.md) cover memory, retrieval, source indexing, provider resolution and Jev failure judgments.
 
 ---
 
 ## The Problem
 
-Across 591 documented production agent failures (2023 – 2026), **88% trace to infrastructure gaps, not model quality.** The recurring failure modes:
+Developers need to inspect an agent's work, preserve useful context and control retries across a session. The workflow addresses those needs through explicit records, memory boundaries and configurable checks.
 
-| Rank | Failure mode          | Share | Representative incident                                                                |
-| ---- | --------------------- | ----- | -------------------------------------------------------------------------------------- |
-| 1    | Context Blindness     | 31.6% | Agent forgets a decision made 50 turns ago                                              |
-| 2    | Rogue Actions         | 30.3% | Production environment deleted by an agent; 13-hour outage                              |
-| 3    | Silent Degradation    | 24.9% | Output quality drifts week-over-week, unnoticed                                         |
-| 4    | Memory Corruption     | 8.1%  | Persistent memory poisoned by adversarial input                                         |
-| 5    | Runaway Execution     | 5.1%  | Subagent burned 27M tokens in a 4.6-hour infinite loop                                  |
+| Failure mode | Engineering response |
+|--------------|----------------------|
+| Context blindness | Persistent handoff files and structured memory |
+| Unsafe actions | Deterministic pre-tool checks |
+| Silent degradation | Evidence-backed completion claims and evaluation gates |
+| Memory corruption | Typed records, trusted scope injection, and validation |
+| Runaway execution | Available budget-brake and loop-detection scripts, enabled through adapter configuration |
 
-Production coding agents — Claude Code, Codex CLI, Cursor, Antigravity, Kiro, Gemini CLI, Copilot, Windsurf — each ship their own version of the cognitive layer (the model + tool use). They do **not** ship the verification-first infrastructure layer that prevents these failure modes. DevOPs is that layer.
+DevOPs builds on the host agent's native hooks, skills, and subagents. Its contribution is the concrete rule set, claim-verification code, project analyzer, and integrated memory workflow.
 
 ---
 
 ## Architectural Solution
 
-Two tightly-coupled artifacts:
+Two integrated layers:
 
-### DevOPs — the productized surface
+### DevOPs - the productized surface
 
-A self-configuring operating system for coding agents, deployable on any of the listed tools via standard formats (`CLAUDE.md`, `AGENTS.md`, `.cursorrules`, SKILL.md).
+A repository-aware workflow for coding agents using standard instruction and skill formats. Claude Code has the current adapter; portability to the other listed tools is a design goal.
 
 ```
                 ┌──────────────────────────────────────┐
@@ -57,61 +63,51 @@ A self-configuring operating system for coding agents, deployable on any of the 
                 │  Modes & Lifecycle states            │
                 │  Universal process skills            │
                 ├──────────────────────────────────────┤
-                │  Hooks (deterministic, always fire)  │ ← Safety floor
+                │  Hooks (run when wired by adapter)  │ ← Safety floor
                 │  Budget brakes, loop detection       │
                 │  Pre/post-tool, session-start/end    │
                 ├──────────────────────────────────────┤
-                │  Memory: Stratum + Zep + file-based  │ ← Persistence
+                │  Memory: local DB + file-based      │ ← Persistence
                 │  Verification: claim-validator       │
                 │  Observability: Langfuse + OTel      │
                 └──────────────────────────────────────┘
 ```
 
-The Constitution sits **above** every skill and **below** every action. Hooks execute **outside the LLM cognitive space** — they fire regardless of what the agent intends.
+The Constitution defines the workflow's operating rules. Hook scripts execute deterministic checks outside model reasoning when the host adapter invokes them; a written instruction alone does not install a hook.
 
-### Stratum (CQ) — the memory backend
+### Integrated memory backend
 
-A high-fidelity middleware proxy between the agent and the LLM API. Prunes irrelevant context using a **CQ-Extended KadaneDial** algorithm (extending DyCP, [arXiv:2601.07994](https://arxiv.org/abs/2601.07994)), stores history as attested structured facts (not lossy summaries), and verifies the agent's memory against git commit history in real time.
+The integrated runtime, developed under the internal name Stratum, is a local Fastify middleware proxy between the agent and provider APIs. The runtime includes typed fact storage, audit infrastructure, and a **CQ-Extended KadaneDial** context-pruning implementation. Pruning is evaluated in shadow mode and is not yet a verified live request-path optimization.
 
-- **Tier 1:** working memory (current session)
-- **Tier 2:** episodic memory (captured sessions awaiting promotion)
-- **Tier 3:** ground-truth memory (promoted, attested, verifiable)
+- **Tier 1:** hot, in-memory conversation turns
+- **Tier 2:** warm, typed fact records with trusted ownership and schema validation
+- **Tier 3:** cold vector and graph retrieval; stored facts still require evidence review
 
 ### Three-Tier Memory Pipeline
 
+The current implementation combines local PostgreSQL fact tables, a relational graph and pgvector. Request-path extraction is optional and needs a configured local model. Session-start recall is separate from experimental context selection; neither implies that live requests are being shortened.
+
 ```mermaid
-graph LR
-    LLM["LLM<br/>(Claude / Codex / etc.)"]
-    Proxy["Stratum Proxy<br/>(Fastify on CF Workers)"]
-
-    subgraph T1["Tier 1 — Hot (RAM)"]
-        T1Store["In-process<br/>Durable Object state"]
-        T1Detail["• Raw verbatim turns<br/>• 2-hour rolling window<br/>• Sub-millisecond access<br/>• Input to KadaneDial pruner"]
-    end
-
-    subgraph T2["Tier 2 — Warm (Supabase)"]
-        T2Store["Postgres<br/>(typed fact tables)"]
-        T2Detail["• Structured facts only<br/>• 30-day retention<br/>• 5–50ms access<br/>• Extracted via schema, not LLM summary"]
-    end
-
-    subgraph T3["Tier 3 — Cold (Pinecone + Neo4j)"]
-        T3Store["Vector + graph"]
-        T3Detail["• Promoted from T2 after 30 days<br/>• Embedded + relationship-indexed<br/>• 50–200ms access<br/>• Attested against git history"]
-    end
-
-    LLM --> Proxy
-    Proxy --> T1Store
-    T1Store -->|"evict at 2h →<br/>schema extractor"| T2Store
-    T2Store -->|"promote at 30d →<br/>embed + graph link"| T3Store
-    T2Store -->|"verify against<br/>git commit history"| Proxy
-    T3Store -->|"query when T1+T2<br/>insufficient"| Proxy
-
-    style T1Store fill:#dc2626,color:#fff
-    style T2Store fill:#ea580c,color:#fff
-    style T3Store fill:#0891b2,color:#fff
+flowchart LR
+    Agent["Coding agent"] --> Proxy["Local Fastify gateway"]
+    Proxy --> Provider["Configured model provider"]
+    Proxy -. "optional completed-exchange extraction" .-> Extract["Local model + schema validation"]
+    Extract --> Warm["PostgreSQL typed facts"]
+    Warm --> Promote["Explicit promotion job"]
+    Promote --> Graph["Relational graph + pgvector"]
+    Source["JS/TS, Rust, Python files"] --> Index["Declarations + dependencies"]
+    Index --> Graph
+    Git["Git change evidence"] --> Audit["Fact attestation + conflict state"]
+    Audit --> Warm
+    Warm --> Recall["Project-bound session-start recall"]
+    Graph --> Recall
+    Recall -. "untrusted context data" .-> Agent
+    Proxy -. "optional observation only" .-> Shadow["Hot window + candidate pruning"]
 ```
 
-> **Design principle**: every promotion step writes **structured facts**, never LLM summaries. Schema-based extractor converts raw exchanges into typed records (`FunctionDeprecation`, `PolicyUpdate`, `TechDecision`, …). Each fact is a hard, auditable data point — wrong facts are caught by the audit engine; "vaguely right" summaries never enter the system.
+The standalone hot/warm memory manager extracts evicted exchanges and retries failed persistence using the same fact IDs. Its deterministic retention test recalls a decision after 50 later turns with a fake model and database. That demonstrates the composition and retry logic, not live-model recall accuracy.
+
+> **Design principle**: preserve typed, attributable facts rather than relying only on recursive summaries. Current validation binds fact records to trusted server scope; successful schema validation does not itself prove a fact is semantically true.
 
 ### Hooks as a Deterministic Safety Floor
 
@@ -121,7 +117,7 @@ graph TB
         Agent["Agent Plan<br/>(model output)"]
     end
 
-    subgraph PreTool["Pre-Tool Hooks (run before every tool call)"]
+    subgraph PreTool["Available Pre-Tool Scripts (adapter wiring required)"]
         H1["block-rm-rf.sh"]
         H2["block-prod-write.sh"]
         H3["block-secrets.sh"]
@@ -135,12 +131,12 @@ graph TB
         ToolRun["Tool runs<br/>(file edit, bash, etc.)"]
     end
 
-    subgraph PostTool["Post-Tool Hooks (run after every tool call)"]
+    subgraph PostTool["Available Post-Tool Scripts (adapter wiring required)"]
         P1["auto-format.sh"]
         P2["gitleaks-scan.sh"]
     end
 
-    subgraph SessionEdges["Session Edges"]
+    subgraph SessionEdges["Available Session Scripts"]
         SS["session-start: load-baton.sh"]
         SE["session-end: rotate-session-key.sh<br/>+ write-baton.sh"]
     end
@@ -158,7 +154,7 @@ graph TB
     style Refused fill:#000000,color:#fff
 ```
 
-The hook layer sits **outside** the LLM cognitive space. The Constitution sits **above** every skill and **below** every action. You cannot ask the agent if it's about to break things — you must prove it mathematically. The hook names in this diagram are the real files at `hooks/universal/{pre,post,session-start,session-end}/`.
+The diagram shows available scripts under `hooks/universal/{pre-tool,post-tool,session-start,session-end}/`, not the active hook set of every installation. At the reviewed revision, the committed Claude configuration wires selected session-start checks, Bash sealed-reference/deployment gates, and a post-edit date-sync hook. Budget, loop-detection, and secret-check scripts are present but are not all wired by that configuration. [Review the exact adapter configuration](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/.claude/settings.json).
 
 ---
 
@@ -166,14 +162,62 @@ The hook layer sits **outside** the LLM cognitive space. The Constitution sits *
 
 | Layer            | Technology                              | Rationale                                                                |
 | ---------------- | --------------------------------------- | ------------------------------------------------------------------------ |
-| **Proxy**        | TypeScript on Fastify                   | Production-grade HTTP; first-class plugins for rate limit + CORS         |
-| **Edge runtime** | Cloudflare Workers (wrangler)            | Global low-latency, JS-native, fits the proxy shape                     |
-| **Hot path**     | Rust + WASM (`rust/hot-path`)            | Tokenizer + scoring on the critical path — every microsecond counts     |
-| **Datastores**   | Supabase Postgres · Pinecone · Neo4j     | Structured + vector + graph for three-tier memory                       |
+| **Proxy**        | TypeScript on Fastify                   | HTTP routing with rate-limit and CORS plugins                            |
+| **Runtime**      | Local Node.js/Fastify + Docker PostgreSQL | Loopback-default proxy; Cloudflare remains an earlier deployment design |
+| **Experimental module** | Rust + WASM (`runtime/rust/hot-path`) | SHA-256 hashing function and a WASM build target; not wired into the proxy request path |
+| **Datastores**   | PostgreSQL, pgvector, and graph-store adapters | Typed records, scoped vector retrieval, and relational graph storage |
 | **Inference**    | ONNX Runtime (Node)                      | Local relevance scoring; no cloud round-trip                            |
-| **Provider SDK** | Anthropic SDK + tokenizer                | Direct provider integration                                              |
+| **Providers** | Anthropic SDK; OpenAI-compatible and Gemini transports | Model routing, response/stream translation, explicit token-estimate labels |
 | **Validation**   | Zod                                      | Schema-validated proxy boundary                                          |
-| **Observability**| Langfuse + OpenTelemetry                 | Token spend, prune-rate, drift detection                                 |
+| **Observability**| Capture records, dashboards + optional OpenTelemetry/Langfuse | Usage and latency records; shadow metrics are separate from live savings |
+
+---
+
+## Implemented Systems
+
+### Structured workflow, continuation and failure judgment
+
+The [sprint workflow](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/.claude/workflows/sprint-cycle.js) coordinates preflight, planning, coding/testing, review, security and validation. Its readiness result is a conjunction of the relevant outcomes. Missing or inconsistent results stay **INDETERMINATE**. The workflow returns a result for review; it does not itself commit, push or deploy.
+
+Journal-based continuation carries forward completed task results. Preflight checks distinguish toolchain problems from code failures, with narrowly registered reversible repairs and recorded blocked states. A separate read-only loopback dashboard presents workflow journals and event updates.
+
+[Jev integration](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/scripts/jev.mjs) adds optional typed judgments through TypeSafe's System One API. Deterministic fault signatures take precedence; residual errors and failed-proof records can be classified with a confidence threshold. Uncertain or unavailable answers escalate. The client refuses known credential shapes and bounds retries/timeouts. This is an integration with a third-party model, not a new model or an automatic authority over the entire conversation history.
+
+### Typed records and bounded session recall
+
+The extractor validates six record kinds: **FunctionChange, TechDecision, PolicyUpdate, Todo, VariableChange and OperationalReference**. Ownership, IDs and provenance come from trusted server context. Concrete operational references must appear in the source turns; schema validity alone does not establish factual truth.
+
+The configured [session-start bridge](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/runtime/scripts/session-start-context.ts) combines up to **three recent and three relevant facts**. It checks the exact project root, organization and endpoint allowlist, then combines bounded warm candidates, scoped lexical search and local embedding similarity. Suppressed and superseded decisions are filtered, and returned facts are marked as untrusted data. Recent facts remain usable when semantic retrieval is unavailable.
+
+Authenticated message processing can extract completed exchanges with a configured local model. Memory writes are nonblocking and can fail independently of a successful provider response. Trusted conversation and exchange IDs connect facts to their source; this does not yet provide comprehensive extraction of tool-heavy transcripts.
+
+### Source graph and currentness checks
+
+The [source indexer](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/runtime/src/memory/source-graph.ts) extracts top-level declarations and local dependencies from JS/TS, Rust and Python. An explicit ingestion command writes File/Function entities, declaration/dependency edges and local embeddings. Graph endpoints support scoped snapshots, fuzzy or semantic search, neighboring entities, paginated files/dependencies and related facts. This is bounded structural indexing, not complete semantic understanding of every language construct.
+
+The [Git-attestation core](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/runtime/src/audit/git-attestation.ts) compares supported code facts against indexed declaration changes. It distinguishes confirmed, unverified and conflicting facts, with persistent conflict state and suppression. The source indexer and Git indexer have different jobs: one maps current declarations/dependencies; the other supplies change evidence for memory claims.
+
+### Gateway, storage and recovery boundaries
+
+The [model router](https://github.com/MILTONADINA/DevOPs/blob/3ac20df17ebfc8e7f1614c23a1bbeecbaff7084e/runtime/src/proxy/providers/router.ts) supports configured Anthropic, OpenAI, OpenRouter, Gemini and local OpenAI-compatible endpoints behind an Anthropic-shaped interface. Provider-specific modules translate requests, responses and streams. Preflight estimates remain distinct from upstream-confirmed usage. This provider coverage is separate from Claude Code being the only shipped coding-agent adapter.
+
+Optional API-key mode derives organization/project scope from authenticated keys. Explicit route filters and scoped SQL functions are essential because the database service role bypasses row-level policies. Backup/export checks pagination completeness; restore validates relationships, follows dependency order and restores API keys inactive by default. Session-erasure inspection reports a local database inventory, not completed deletion of every copy.
+
+### Context selection and release gates
+
+KadaneDial relevance/temporal selection, supersession checks and a provenance-gated candidate selector are implemented. The latter adds dead-fact exclusion, successor transfer, query rescue and exchange completion. It is still a pure experimental module; optional shadow observation records candidate behavior without changing the forwarded request.
+
+The evaluation harness compares full and selected context, tracks evidence survival, summarizes repeated judged scores and rejects empty or incomplete published-dataset runs. Full passing judged gates remain open. Automatic long-history replacement is proposed/gated work; the existing session-start fact recall should not be mistaken for that future request transformation.
+
+## Scoped Execution Evidence
+
+On **October 1, 2026**, at public main revision **`3ac20df`**:
+
+- **187 tests passed** across 11 selected runtime files, covering typed-memory persistence/recall, graph promotion, source parsing, provider resolution, in-process message-memory routing, Git attestation and shadow/provenance selection.
+- **44 tests passed** across four Jev/triage/classifier files, covering injected responses, confidence escalation, credential-shape refusal, retries and timeouts.
+- A read-only run of the actual indexer over **116 tracked runtime/Rust/evaluation source files** produced **116 File entities, 459 Function entities, 232 dependency edges and 459 declaration edges**, with **zero unresolved endpoints**.
+
+These are scoped deterministic and in-process checks. They do not use a live provider/model/database or establish full-suite success, deployed savings or a passing benchmark release gate. [Commands, per-file counts and source links](verification-2026-10-01.md) make the scope inspectable.
 
 ---
 
@@ -181,57 +225,57 @@ The hook layer sits **outside** the LLM cognitive space. The Constitution sits *
 
 ### 1. Constitution + Hooks as a safety floor *outside* the LLM
 
-**Decision:** The Constitution and deterministic hooks execute regardless of what the agent decides to do. Hooks intercept pre-tool, post-tool, session-start, and session-end, and can refuse, modify, or terminate.
+**Decision:** Express workflow rules in instructions and implement enforceable checks as hook scripts. The host adapter selects which pre-tool, post-tool, session-start, and session-end hooks actually run.
 
-**Why?** You cannot ask an agent if it is in a loop — you must prove it mathematically. Asking the model to police itself fails predictably and asymmetrically (it fails worst when it's broken). Hooks are written in deterministic code that doesn't depend on the model's cognition.
+**Why?** Tool-name/argument hashes and budget-ledger totals give the scripts explicit refusal conditions. Those checks can operate independently of a generated completion summary, provided the adapter calls them with the required inputs.
 
 ### 2. Three-tier memory with attestation, not summary
 
-**Decision:** Memory promotes through Tier 1 (working) → Tier 2 (episodic) → Tier 3 (ground-truth), with each Tier 3 entry attested against an external source (git commit history, file hashes).
+**Decision:** Separate hot turns, warm typed facts, and cold retrieval. The typed-fact boundary validates schema and trusted identity; the Git-attestation core can classify supported code-related facts as confirmed, unverified, or conflicting against indexed changes.
 
-**Why?** Summaries-of-summaries hallucinate compoundingly over months. Attestation against an external source converts "the agent thinks decision X was made" into "decision X was made at commit `abc1234` because the diff says so." This is the fix for **Context Blindness** and **Memory Corruption** simultaneously.
+**Why?** Retaining structured fields and associated commit evidence makes memory claims inspectable. Schema validity is not semantic truth: unsupported claims stay unverified, and a conflict needs review. Local model extraction and explicit promotion are implemented; model-assisted audit escalation and broader release claims retain their own gates.
 
-### 3. Extend DyCP — don't roll a new algorithm
+### 3. Extend DyCP - don't roll a new algorithm
 
 **Decision:** The CQ-Extended KadaneDial pruning algorithm extends DyCP (arXiv:2601.07994) rather than starting from scratch.
 
-**Why?** Building on a published, peer-evaluated algorithm gives the system an anchored evaluation surface (the paper's benchmarks become the baseline) and a credibility surface (the algorithm is not "trust me, it works").
+**Why?** An explicit algorithm and evaluation harness provide a baseline for measuring retrieval and output quality. The current pruner still needs passing full judged evaluation before release quality or savings can be claimed.
 
 ### 4. Universal portability via standard formats
 
-**Decision:** Single install works across Claude Code, Codex CLI, Cursor, Antigravity, Kiro, Gemini CLI, Copilot, Windsurf, and local LLMs — via standard `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, and SKILL.md formats.
+**Decision:** Target portability through standard instruction and skill formats. **Only Claude Code currently has a real adapter**; the remaining integrations are planned.
 
 **Why?** Lock-in to one agent tool is a strategic dead end: tools come and go on a quarterly cadence. The investment in DevOPs has to survive the tool churn. Standard formats are the only stable surface.
 
-### 5. Cloudflare Workers for the proxy, Rust + WASM for the hot path
+### 5. Local runtime, with an experimental Rust + WASM module
 
-**Decision:** Workers host the bulk of the proxy. The tokenization + scoring inner loop is Rust compiled to WASM, called from Workers.
+**Decision:** Run the integrated Fastify proxy locally with PostgreSQL and loopback-default access. Retain a separate Rust/WASM hashing module and build target for experimentation; the earlier Workers topology is no longer the launch architecture.
 
-**Why?** The proxy is on the critical path of every LLM request — latency budget is tight. Rust hot-path code lets the latency-sensitive work happen in microseconds, while keeping the orchestration layer in TypeScript where iteration speed matters more.
+**Why?** Local operation keeps runtime setup and memory under the operator's control. TypeScript implements the current orchestration and pruning logic. The Rust module currently exposes SHA-256 hashing; no tokenizer, scoring integration, or measured request-path speedup is claimed.
 
-### 6. Token-arbitrage pricing
+### 6. Open-source, local-first operation
 
-**Decision:** Charge 20% of measured token savings — never more than the customer saves.
+**Decision:** MIT licensing, no project payment, and no hosted service. The September 2026 decision supersedes the former token-arbitrage business model; legacy billing-code removal is still underway.
 
-**Why?** Aligns incentives perfectly: if Stratum stops saving tokens, the customer stops paying. This is the only pricing model where the vendor's incentives match the customer's.
+**Why?** Users run the workflow and memory on their own machines and pay any optional provider directly. Usage measurement remains useful independently of billing.
 
 ---
 
 ## Documentation Surface
 
-DevOPs and Stratum together carry an extensive doc surface, including:
+DevOPs and its integrated runtime carry an extensive doc surface. Retained documents below live under `runtime/docs/`; some describe earlier architecture or planned work. Removed historical documents are identified explicitly. The current source [README](https://github.com/MILTONADINA/DevOPs) and [runtime README](https://github.com/MILTONADINA/DevOPs/tree/main/runtime) state implementation limits.
 
-- `docs/BLUEPRINT.md` — full system architecture, data flow, invariants
-- `docs/TECHNICAL_SPEC.md` — TypeScript interfaces, Postgres DDL, data models
-- `docs/MEMORY_ARCHITECTURE.md` — three-tier memory design
-- `docs/ALGORITHM.md` — CQ-Extended KadaneDial formal specification
-- `docs/SECURITY.md` — ZK-Context and TEE architecture
-- `docs/AUDIT_ENGINE.md` — git-attestation and escalating audit logic
-- `docs/EVAL_FRAMEWORK.md` — pruning accuracy measurement methodology
-- `docs/ROADMAP.md` — phase-by-phase build plan with acceptance criteria
-- `docs/BUSINESS_MODEL.md` — token-arbitrage pricing and revenue projections
-- `docs/PITCH.md` — one-page investor brief
-- `docs/GLOSSARY.md` — authoritative definition of all project terms
+- `docs/BLUEPRINT.md` - full system architecture, data flow, invariants
+- `docs/TECHNICAL_SPEC.md` - TypeScript interfaces, Postgres DDL, data models
+- `docs/MEMORY_ARCHITECTURE.md` - three-tier memory design
+- `docs/ALGORITHM.md` - CQ-Extended KadaneDial formal specification
+- `docs/SECURITY.md` - ZK-Context and TEE architecture
+- `docs/AUDIT_ENGINE.md` - git-attestation and escalating audit logic
+- `docs/EVAL_FRAMEWORK.md` - pruning accuracy measurement methodology
+- `docs/ROADMAP.md` - phase-by-phase build plan with acceptance criteria
+- `docs/BUSINESS_MODEL.md` - removed historical token-arbitrage proposal, superseded by the local-first decision
+- `docs/PITCH.md` - removed historical investor brief
+- `docs/GLOSSARY.md` - authoritative definition of all project terms
 
 ---
 

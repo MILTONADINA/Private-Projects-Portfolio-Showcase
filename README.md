@@ -1,113 +1,77 @@
-<div align="center">
+# Engineering Case Studies
 
-# Private Projects — Technical Showcase
+I'm **Milton Adina Shisia**, a software engineer working across client applications, mobile products and application security. These cases explain the problem, my contribution, implementation decisions and supporting evidence behind the work.
 
-### Engineering depth behind proprietary client & product work
+[Portfolio](https://miltonadina.github.io) · [GitHub](https://github.com/MILTONADINA) · [LinkedIn](https://www.linkedin.com/in/miltonadina) · miltonadina@gmail.com
 
-**The source for these systems is private (client work + active products).**
-This repo is the **evidence folder** — architecture diagrams, database schemas, security
-patterns, and *real, dated, reproducible* test-run screenshots that prove the depth behind each build.
+## Client engagements
 
-<br/>
+### [BrightPath: school operations and payments](./BrightPath)
 
-[![Systems](https://img.shields.io/badge/6_Systems-Documented-0078D4?style=for-the-badge)](#the-portfolio)
-[![Tests](https://img.shields.io/badge/Real_Test_Evidence-2,200+_passing-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](#portfolio-at-a-glance)
-[![Security](https://img.shields.io/badge/AppSec-OWASP_·_SAST_·_DAST-dc2626?style=for-the-badge&logo=hackthebox&logoColor=white)](./BrightPath/security)
-[![Languages](https://img.shields.io/badge/Polyglot-TS_·_Dart_·_Java_·_Rust-8B5CF6?style=for-the-badge)](#technologies)
+**Full-Stack & Security Engineer · April 2025 to present · Private client source**
 
-[**BrightPath**](./BrightPath) ·
-[**Lumière**](./Lumiere) ·
-[**Light Routines**](./LightRoutines) ·
-[**Flourish**](./Flourish) ·
-[**DevOPs + Stratum**](./DevOPs)
+Schools need enrollment, grades, attendance, fees and parent communication to stay connected across web and mobile. As the primary engineer, I built tenant-aware API workflows, shared TypeScript/Dart contracts, payment-retry handling and transactional invoice reconciliation. The case also covers durable imports with row checkpoints, quota reservation before paid AI requests, department-bound assessment approval and scoped offline data.
 
-</div>
+**Stage:** Active development, with release gates still in place. October 1 focused backend checks passed 43 cases across quota, money, offline authorization and import outcomes; the case separates these from the historical 260-check record. [SchoolGrid](./BrightPath/SchoolGrid) and [Exam Analytics](./BrightPath/ExamAnalytics) document related offline administration tools.
 
----
+### [Lumière: bilingual content management and checkout](./Lumiere)
 
-> **No proprietary code is exposed.** Every diagram and schema is an abstracted representation;
-> every screenshot is a capture of a real test command run against the real (private) source,
-> dated and reproducible by anyone with repo access. Numbers last re-verified **2026-05-29**.
+**Full-Stack Developer · December 2025 to February 2026 · Private client source**
 
----
+A digital agency needed English/Swahili content, staff-managed services and portfolio pages, and inquiry/order handling. I implemented the Next.js application, translation schema, CMS administration and validated Stripe checkout, with identity/membership checks in admin API handlers and rate limits on public submission handlers.
 
-## The Portfolio
+**Deliverables:** Localized pages, CMS workflows, order/checkout integration and content history. Nine offline sanitization/rate-limit checks passed on October 1, 2026: five existing checks and four focused boundary probes. The original five-check smoke image was first committed in February 2026 and remains a separate historical record; these checks do not verify live payments, email or CMS persistence.
 
-| # | Project | Domain | Stack | Headline engineering |
-|---|---------|--------|-------|----------------------|
-| 1 | [**BrightPath Suite**](./BrightPath) | Multi-tenant school SaaS (+2 companion modules) | React 18 · TypeScript · Supabase · PostgreSQL | 403-table schema · **1,063 RLS policies** · 69 edge functions · 2,228 test files |
-| 2 | [**Lumière**](./Lumiere) | Bilingual agency platform | Next.js 16 · React 19 · Prisma · Supabase | 17-model CMS · 40 RSC pages · Stripe · EN/SW i18n |
-| 3 | [**Light Routines**](./LightRoutines) | Cross-platform mobile + native engines | Flutter · Swift · Kotlin · SQLite · BLE | 5-package Clean Architecture · native iOS/Android session engines · **354 tests** |
-| 4 | [**Flourish**](./Flourish) | Compliance-engineered health platform | Next.js 16 · Expo · Fastify · tRPC · Drizzle | HIPAA-ready · append-only audit ledger · **1,278 tests / 25 workspaces** |
-| 5 | [**DevOPs + Stratum**](./DevOPs) | Agent OS + memory backend | TypeScript · Cloudflare Workers · Rust/WASM | three-tier memory · deterministic safety hooks · KadaneDial scheduler |
+### [Flourish: family milestones, consent and controlled reports](./Flourish)
 
-<sub>BrightPath ecosystem also includes [SchoolGrid](./BrightPath/SchoolGrid) (offline timetabling, 309 tests) and [Exam Analytics](./BrightPath/ExamAnalytics) (Flutter desktop, 12-table drift schema).</sub>
+**Full-Stack & Compliance Engineer · Private client source**
 
----
+Parents need to record developmental observations and prepare information for a professional conversation. My work spans a versioned deterministic rules pipeline, encrypted observations and reasoning traces, private reports, provider-directory ingestion, application-role audit privileges and consent/deletion/data-request workflows.
 
-## Portfolio at a glance
+**Stage:** Implementation includes reporting, provider ingestion, notifications, administration and data-request fulfillment; launch remains gated. The rules use synthetic development content, and billing activation is deferred. Forty-five focused rules/mapping tests passed on October 1; the separate May summary records 1,278 checks.
 
-```mermaid
-xychart-beta
-    title "Verified automated tests per system (real green-bar runs, 2026-05-29)"
-    x-axis ["BrightPath*", "Flourish", "Light Routines", "SchoolGrid", "Dr.WHO"]
-    y-axis "Tests passing" 0 --> 1300
-    bar [260, 1278, 354, 309, 3]
-```
+## Independent product
 
-<sub>*BrightPath bar = a 7-category slice (260) run live; the full repo surface is **2,228 test files / 19,639 `it`/`test()` cases**. Each number above is a real run captured in [Test-Evidence](#portfolio-at-a-glance), not an estimate.</sub>
+### [Light Routines: timed mobile sessions](./LightRoutines)
 
-| Portfolio metric | Value |
-|---|---|
-| Systems documented | 6 (5 headline + BrightPath companions) |
-| Verified passing tests (sum of real green-bar runs) | **2,204** (260 + 1,278 + 354 + 309 + 3) |
-| BrightPath full test surface | 2,228 test files · 19,639 `it`/`test()` cases |
-| Largest codebase | BrightPath — ~485K TS/TSX source LOC |
-| Database scale (BrightPath) | 403 tables · 1,063 RLS policies · 82 migrations |
-| Languages shipped | TypeScript · Dart · Kotlin · Swift · Java · Rust · Python · SQL |
-| Security tooling in CI | Semgrep · gitleaks · CycloneDX SBOM · OWASP ZAP · Playwright a11y/CSP |
+**Founder & Sole Engineer · December 2025 to present · Private product source**
 
----
+I built the Flutter app, approved-user Firebase beta, session controller and recorded history. The closed beta began with real testers on June 29, 2026, followed by an Android internal release. Kotlin/Swift bridges and SQLite repositories are documented separately from the beta's Dart/Firestore session path. The beta turns output off before awaiting persistence, and access rules separate approved users from pending profiles. October 1 validation passed 71 selected Flutter tests and 44 access-rule tests against a local Firestore emulator; hardware execution remains outside that scope.
 
-## Evidence & security artifacts
+## Original open-source project
 
-Every project folder is **self-contained** — its architecture notes, database schema,
-dated test-run screenshots, and source-tree inventory live inside that project's directory.
-The deepest application-security work (a **STRIDE threat model**, a real **OWASP ZAP DAST**
-report, RLS policy examples, and the Semgrep/gitleaks/SBOM CI configs) lives under
-[`BrightPath/security/`](./BrightPath/security).
+### [DevOPs: workflow and memory for coding agents](./DevOPs)
 
+**Independent project · Systems Engineer · 2026 to present · MIT license**
 
-## Technologies
+I built multi-role planning/verification workflows, six kinds of typed memory, bounded session recall, source graphs and a local model gateway. Claude Code is the coding-agent adapter; provider routing separately supports Anthropic, OpenAI, OpenRouter, Gemini and local-compatible models. Jev-assisted failure triage and Git-backed fact checks complement reproducible completion records. On October 1, 231 focused runtime/triage tests passed with injected dependencies; a real-source indexing demonstration mapped 116 files. Context pruning remains experimental. [Public source](https://github.com/MILTONADINA/DevOPs).
 
-```
-Frontend        React 18/19 · Next.js 15/16 (App Router, RSC) · Flutter · Tailwind · shadcn/ui · MUI v7
-Mobile          Flutter (Dart) · Swift (CoreBluetooth) · Kotlin (Foreground Services) · Expo (React Native)
-Backend         Node.js · Fastify · tRPC · Express · Spring Boot · Deno Edge Functions
-Database        PostgreSQL · Supabase (RLS) · MySQL · SQLite · drift · Drizzle · Prisma · Sequelize
-Auth & Security OWASP Top 10 · multi-tenant RLS · RBAC · JWT · bcrypt · TOTP MFA · biometric gates · Zod · DOMPurify · Clerk
-AppSec / CI     Semgrep · gitleaks · CycloneDX SBOM · OWASP ZAP · Playwright (a11y/CSP/consent flows) · pnpm audit
-Payments        Stripe · M-Pesa (Daraja) · Airtel Money · MTN Mobile Money
-Testing         Vitest · Playwright · Jest · Supertest · JUnit 5 · flutter_test · Testing Library · Maestro
-Edge / Infra    Cloudflare Workers · Rust + WASM hot paths · Vercel · Docker · GitHub Actions
-AI Systems      OpenAI integration · agent memory architecture · vector + graph stores (Pinecone, Neo4j) · NL→SQL
-```
+## Contributions to other projects
 
----
+| Work | My contribution | Status and evidence |
+|---|---|---|
+| [Graph Engineering](./GraphEngineering) | Extended the collaborative foundation with SQLite context, reviewed persistent memory, Laya/Jev decision controls, MCP access, source analysis and plan-bound execution. | Changes merged in my [public fork](https://github.com/MILTONADINA/graph-engineering/tree/dev); two upstream proposals remain open. |
+| [Hive](./Contributions#hive) | Windows onboarding guidance and tool-integration documentation. | One upstream PR merged; four documentation PRs covering 18 integrations remain open. |
+| [Private security contributions](./PrivateSecurityContributions) | Authored authorization, ownership, session, webhook and privacy-workflow submissions across three private repositories. | Submitted through PRs and unmerged; the case describes the work without private source or issue details. |
 
-## About
+Graph Engineering’s October 1 focused validation passed 130 engine tests and nine Python sidecar tests. A separate CLI demonstration verified memory across process restarts and flagged changed source. A single 1,000-file synthetic indexing measurement is documented with hardware and retrieval limits. The original scaffold is credited; the wider platform has no root license yet.
 
-I'm **Milton Adina Shisia** — a Computer Science (Cybersecurity) student at Oklahoma Christian
-University (Honor Roll · GPA 3.48) with a prior B.S. in Epidemiology & Biostatistics. I build
-secure, test-driven systems and served as the **primary engineer** on the client and product
-work documented here — from system design through hardening and deployment.
+Contribution statuses are dated **October 1, 2026**. The [contribution record](./Contributions) distinguishes upstream acceptance, fork development and private submissions.
 
-Each case study documents the *how* and *why* behind every major engineering decision.
+## Coursework and security practice
 
-📫 [LinkedIn](https://www.linkedin.com/in/miltonadina) · [GitHub](https://github.com/MILTONADINA) · miltonadina@gmail.com
+- [Doctor Who Knowledge API](./Dr.WHO): three-person coursework project. My work includes frontend, schema-aware OpenAI Q&A, authentication and migration work; the case credits the team and scopes the test evidence.
+- [Public coursework index](./Coursework): Spring Boot user/product API, Vue/Express applications, Java desktop and persistence projects, C++ game development, and data structures.
+- [Application-security artifacts](./BrightPath/security): conceptual STRIDE threat model and abstract security patterns. The [OWASP Juice Shop assessment](./BrightPath/security/scans/OWASP-JuiceShop-ZAP-assessment.md) is a separate training-lab scan with documented mitigations.
 
-<div align="center">
+## Reading the evidence
 
-<sub>Built to demonstrate engineering depth, not to replace code. · Numbers re-verified 2026-05-29.</sub>
+Client cases pair confidential-safe test evidence with abstract architectural views. BrightPath and Flourish present current focused-test summaries alongside sanitized historical records; Lumière retains its original five-check smoke image. Light Routines includes its May summary and a distinct September project-record excerpt. Captions identify the date, scope and evidence type. Conceptual diagrams explain implementation decisions and do not represent additional test runs.
 
-</div>
+Client source, product interfaces, business schemas and unredacted internal artifacts remain private. Public projects link to inspectable repositories and PRs. Independent-product, public-project and lab cases retain their applicable historical artifacts, with dates and scope beside recorded results.
+
+## Background
+
+**B.S. Computer Science, Cybersecurity specialization**, Oklahoma Christian University. GPA **3.48**, Honor Roll; expected graduation **April 30, 2027**. I also hold a B.S. in Epidemiology & Biostatistics.
+
+Languages used across these projects and coursework: **TypeScript, JavaScript, Java, Dart, Python, SQL, Kotlin, Swift, C++ and Rust**. The cases explain their scope, from application and mobile work to Python evaluation tooling and experimental Rust hashing.

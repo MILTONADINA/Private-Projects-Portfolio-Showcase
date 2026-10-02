@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "kind": "synthetic-context-performance",
+  "measuredAt": "2026-10-01T19:57:25.737Z",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5 Max",
+    "logicalCpus": 18
+  },
+  "implementationSha256": "f68d63c8bbcc3129a7ab42b86a61bdc9f18dc81e93a3f622bc8b375d0476d4c9",
+  "harnessSha256": "a84124d1b19dd05420609e73a4776b2daadc3a204466a55fd7261c2bae75ec38",
+  "dataset": {
+    "fileCount": 1000,
+    "sourceBytes": 307080,
+    "languages": [
+      "typescript"
+    ],
+    "generatedFunctions": 2000
+  },
+  "timings": {
+    "coldIndexMs": 728.837,
+    "unchangedIndexMs": 176.043,
+    "oneFileChangedIndexMs": 570.058,
+    "summariesMs": 64.496,
+    "lexicalQueryMs": 1.828,
+    "graphQueryMs": 4.019,
+    "hybridQueryMs": 2.658
+  },
+  "processRssBytes": 618921984,
+  "processMaxRssBytes": 1819099136,
+  "databaseBytes": 38182912,
+  "walBytes": 19565912,
+  "summaries": 1051,
+  "retrieval": [
+    {
+      "mode": "lexical",
+      "returnedItems": 1,
+      "estimatedTokens": 337,
+      "semanticAvailable": false,
+      "expectedFilePresent": true
+    },
+    {
+      "mode": "graph",
+      "returnedItems": 6,
+      "estimatedTokens": 1099,
+      "semanticAvailable": false,
+      "expectedFilePresent": true
+    },
+    {
+      "mode": "hybrid",
+      "returnedItems": 6,
+      "estimatedTokens": 1099,
+      "semanticAvailable": false,
+      "expectedFilePresent": true
+    }
+  ],
+  "limits": [
+    "Synthetic generated TypeScript only; not representative engineering accuracy",
+    "Embeddings intentionally unprovisioned; hybrid falls back to lexical+graph",
+    "Warm index verifies every source content hash and reuses parser artifacts",
+    "No hosted API, model inference, or production throughput claim"
+  ]
+}

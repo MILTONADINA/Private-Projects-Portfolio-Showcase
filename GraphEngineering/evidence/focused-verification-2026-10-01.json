@@ -1,0 +1,119 @@
+{
+  "date": "2026-10-01",
+  "repository": "https://github.com/MILTONADINA/graph-engineering",
+  "branch": "dev",
+  "commit": "5b88af9787f9da00e312268847aee27053be8555",
+  "node": "24.18.0",
+  "engine": {
+    "files": [
+      {
+        "file": "packages/engine/tests/context-database.test.ts",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/context-maintenance.test.ts",
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/context-semantic.test.ts",
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/decision-batch.test.ts",
+        "passed": 23,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/decision-controls.test.ts",
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/decision-deadline.test.ts",
+        "passed": 18,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/decisions.test.ts",
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/memory-assertions-integration.test.ts",
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/memory-assertions.test.ts",
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/memory-export-flow.test.ts",
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/managed-verification-deadline.test.ts",
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/verification-container-deadline.test.ts",
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "file": "packages/engine/tests/verification-deadline.test.ts",
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "passed": 130,
+    "failed": 0,
+    "skipped": 0
+  },
+  "python_sidecar": {
+    "command": "python3 -m unittest discover -s sidecars/laya -p 'test_*.py' -v",
+    "passed": 9,
+    "failed": 0
+  },
+  "context_demo": {
+    "separate_cli_processes": 8,
+    "scenario_assertions_passed": 7,
+    "result": "Accepted constraint persisted across CLI restarts; changed source triggered review while retaining mandatory context."
+  },
+  "scope": [
+    "Focused subset, not the full repository suite",
+    "Real local SQLite, TypeScript binding and synthetic CLI-to-MCP flow",
+    "Decision transports and promotion-controller authority seams mocked",
+    "Docker command and managed verifier seams injected; no fresh container-runtime claim",
+    "Laya fake predictors with real loopback HTTP; no model inference",
+    "No model downloads, metered provider calls, remote writes or private project input"
+  ],
+  "commands": [
+    "npm ci --ignore-scripts --no-audit --no-fund",
+    "npm run build:dependencies",
+    "npm run build -w @graph-engineering/engine",
+    "npm test -w @graph-engineering/engine -- tests/context-database.test.ts tests/context-maintenance.test.ts tests/context-semantic.test.ts tests/memory-assertions.test.ts tests/memory-assertions-integration.test.ts tests/memory-export-flow.test.ts tests/decisions.test.ts tests/decision-batch.test.ts tests/decision-controls.test.ts tests/decision-deadline.test.ts --maxWorkers=2 --reporter=default",
+    "npm test -w @graph-engineering/engine -- tests/verification-deadline.test.ts tests/verification-container-deadline.test.ts tests/managed-verification-deadline.test.ts --maxWorkers=2 --reporter=default",
+    "python3 -m unittest discover -s sidecars/laya -p 'test_*.py' -v",
+    "node packages/engine/benchmarks/context.mjs 1000"
+  ]
+}

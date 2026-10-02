@@ -1,253 +1,58 @@
-<div align="center">
+# Application Security Patterns
 
-# Security Patterns
+These are abstract engineering patterns from my application work. They explain control placement and tradeoffs without reproducing client code, business schemas or operational settings. The [evidence index](./README.md) distinguishes these design notes from the separate Juice Shop training assessment.
 
-**Cross-Project Security Architecture**
+## Identity and authorization are separate checks
 
-_How I secure real client applications — from authentication to database-level isolation._
+Provider authentication establishes who is making a request. The application must still decide whether that identity can access the requested account, tenant, school or record. Server handlers apply membership, role and resource checks before querying or changing data; interface visibility is not an authorization boundary.
 
-</div>
+For CMS work, authenticated staff membership gates mutations. For multi-tenant APIs, a caller-supplied record ID still needs an ownership check. Native device-owner authentication is a separate feature gate and does not establish account identity or age.
 
----
+## Database privileges affect row-policy protection
 
-> This section documents the security patterns and implementations used across the private projects. As a Computer Science student with a **Cybersecurity specialization**, security isn't an afterthought — it's foundational to every architecture decision.
-
----
-
-## Tooling — in production vs. evaluated
-
-Honest framing of what's actually running in CI versus what's been used manually or evaluated for fit. Sanitized workflow excerpts for the "in production" entries live in [`../Security-Evidence/`](./ci).
-
-### In production (gated in CI on push, PR, or scheduled cron)
-
-| Tool                       | Where it runs                                                  | What it does                                                              |
-| -------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| **Semgrep OSS**            | Flourish (push, PR, weekly cron)                               | SAST — OWASP Top 10, secrets, Node.js patterns, project-specific rules    |
-| **gitleaks-action@v2**     | Flourish (push, PR, daily cron)                                | Secret leakage in commits, including full history                         |
-| **pnpm audit (`--prod`)**  | Flourish (push, PR, weekly cron)                               | GitHub advisory CVEs in production dependencies                           |
-| **Trivy (fs)**             | Flourish (push, PR, weekly cron)                               | Broader CVE database + license scan                                       |
-| **CycloneDX `cdxgen`**     | Flourish (push to main when lockfile changes)                  | SBOM regeneration + commit                                                |
-| **Playwright + axe-core**  | SchoolGrid Pro (PR)                                            | WCAG 2 + 2.1 audit including color contrast                               |
-| **Playwright (CSP)**       | SchoolGrid Pro (PR)                                            | Content Security Policy regression test (print flow)                      |
-| **DOMPurify**              | BrightPath, Lumière, SchoolGrid Pro (runtime)                  | HTML sanitization at the input boundary                                   |
-| **Zod**                    | All TS projects (runtime)                                      | Schema-validated input boundaries on every API endpoint and JSON import   |
-| **bcrypt**                 | BrightPath (via Supabase), Lumière, Internet-Apps, Exam Analytics (PIN) | Password / PIN hashing                                          |
-| **JWT** (Supabase / Firebase / signed) | BrightPath, Lumière, Light Routines, Internet-Apps, Doctor Who DB | Stateless authentication                                      |
-| **PostgreSQL RLS**         | BrightPath, Lumière, Flourish                                  | Database-engine-level tenant + minor-data isolation                        |
-
-### Evaluated / ad-hoc (used manually, not committed as CI artifacts)
-
-| Tool                   | Use case                                                                              |
-| ---------------------- | ------------------------------------------------------------------------------------- |
-| **OWASP ZAP** (headless) | DAST sweeps against deployed environments before release milestones                 |
-| **Burp Suite Community** | Manual exploratory testing of authentication and session flows                       |
-| **Nuclei**             | Template-driven vulnerability scanning during pre-release hardening sprints           |
-| **jwt-cli**            | Local JWT inspection, claim verification, signature validation                        |
-| **curl**               | Manual API surface probing                                                            |
-
-These tools are part of the toolkit but their output is not currently committed as CI evidence. Surfacing them in the Security-Evidence folder is on the roadmap.
-
----
-
-## 1. Authentication
-
-### JWT Implementation
-
-| Aspect             | BrightPath                                  | Lumière           | Light Routines            |
-| ------------------ | ------------------------------------------- | ----------------- | ------------------------- |
-| **Provider**       | Supabase Auth                               | Supabase Auth     | Firebase Auth             |
-| **Access tokens**  | Short-lived (24h)                           | Short-lived       | Firebase ID tokens        |
-| **Refresh tokens** | HTTP-only cookies (30 days)                 | HTTP-only cookies | Firebase SDK managed      |
-| **Token rotation** | ✅ On refresh                               | ✅ On refresh     | ✅ Firebase auto          |
-| **Secure storage** | Memory (access), HTTP-only cookie (refresh) | HTTP-only cookie  | Secure Enclave / Keystore |
-
-### Multi-Factor Authentication
+PostgreSQL row policies apply to roles that enforce them. A privileged backend connection can bypass RLS, which makes application predicates a critical boundary. Policy counts and ORM use do not prove tenant isolation.
 
 ```mermaid
-graph LR
-    Login["User Login<br/>Email + Password"] --> PWCheck{"Password<br/>Correct?"}
-    PWCheck -->|"No"| RateLimit["Rate Limiter<br/>5 fails = 15min lockout"]
-    PWCheck -->|"Yes"| MFA{"MFA<br/>Enabled?"}
-    MFA -->|"No"| Grant["Access Granted<br/>JWT Issued"]
-    MFA -->|"Yes"| MFAType{"MFA Method"}
-    MFAType -->|"TOTP"| TOTP["Google Authenticator<br/>6-digit code"]
-    MFAType -->|"SMS"| SMS["SMS OTP<br/>African GSM networks"]
-    MFAType -->|"Biometric"| Bio["FaceID / TouchID<br/>BiometricPrompt"]
-    TOTP & SMS & Bio --> Grant
-
-    style RateLimit fill:#dc2626,color:#fff
-    style Grant fill:#059669,color:#fff
+flowchart LR
+    Caller[Request and identity] --> Identity[Validate identity]
+    Identity --> Scope[Authorize requested scope]
+    Scope --> Query[Scoped database operation]
+    Query --> Role{Connection privileges}
+    Role --> Enforced[RLS-enforced role]
+    Role --> Privileged[Application predicates required]
 ```
 
-#### Used Across:
+This is a conceptual distinction, not a representation of a client's deployment or exact policies.
 
-- **BrightPath**: TOTP (Google Authenticator) + SMS OTP (for African mobile-first users) + backup codes (10 recovery codes)
-- **Light Routines**: Biometric adult gate (FaceID/TouchID/BiometricPrompt) for high-risk features
+## Validate data at the boundary that consumes it
 
-### Password Hashing
+Input schemas constrain accepted request shapes. Parameterized queries address query construction; escaping and sanitization address content rendering. Rich-text handling needs an explicit policy because markup has a different risk profile from plain text.
 
-| Parameter       | Value                                             |
-| --------------- | ------------------------------------------------- |
-| **Algorithm**   | bcrypt                                            |
-| **Cost factor** | 12 (Supabase default, appropriate for production) |
-| **Salt**        | Per-password random salt (bcrypt built-in)        |
+Schema validation does not establish authorization or prove that every accepted value is nonsensitive. The operation still needs caller checks and appropriate data minimization.
 
----
+## Make retries and external events explicit
 
-## 2. Authorization
+Payment idempotency can bind a request fingerprint to the authenticated caller, reserve work and replay a completed result. Transactional reconciliation keeps related database updates together.
 
-### Row-Level Security (RLS)
+Webhook authentication follows the provider's contract. Signature checks, callback tokens and provider status queries are different mechanisms. Replay protection and event-processing state need separate treatment; a verified callback alone does not prove exactly-once processing.
 
-RLS is used in both **BrightPath** and **Lumière** to enforce data isolation at the PostgreSQL engine level.
+## Apply privacy controls through concrete mechanisms
 
-```mermaid
-graph TB
-    subgraph Application["Application Layer"]
-        API["API Request<br/>with JWT"]
-    end
+Versioned field encryption separates stored ciphertext from the operator's current key choice. Signed reads keep private report access bounded. Application-role restrictions can prevent updates/deletions through that role while leaving database-administrator access as a separate trust boundary.
 
-    subgraph Supabase["Supabase / PostgreSQL"]
-        AuthUID["auth.uid()<br/>Extract user from JWT"]
-        RLSPolicy["RLS Policy<br/>USING clause"]
-        Query["SQL Query<br/>Only matching rows returned"]
-    end
+Consent, export and erasure are workflows with user requests, authorization and data operations. Their implementation supports privacy engineering; it is not by itself a legal-compliance determination.
 
-    API -->|"Bearer token"| AuthUID
-    AuthUID --> RLSPolicy
-    RLSPolicy -->|"Evaluate per row"| Query
+## Use automation as scoped evidence
 
-    style RLSPolicy fill:#059669,color:#fff
-```
+| Control family | Purpose | Evidence boundary |
+|---|---|---|
+| Semgrep | Identify selected source patterns and rule violations. | Rules and findings do not prove absence of vulnerabilities. |
+| gitleaks | Detect configured secret patterns in repository content/history. | Rotation and response to an exposed secret remain operational work. |
+| Dependency audit and SBOM | Surface dependency findings and describe components. | A generated inventory is not a remediation or clean-runtime result. |
+| Browser/CSP/accessibility tests | Assert specific page and response behaviors. | Coverage depends on the pages, states and assertions exercised. |
+| Rate limiting | Bound selected request flows. | Per-process limits do not become distributed or volumetric protection. |
+| ZAP baseline | Spider and passively inspect a target. | The published result here is a local Juice Shop lab only. |
 
-**BrightPath** (Multi-tenant):
+Client workflow/source excerpts are not included. The [STRIDE design note](./threat-models/BrightPath-STRIDE-threat-model.md) identifies trust boundaries and follow-up verification needs; the [lab assessment](./scans/OWASP-JuiceShop-ZAP-assessment.md) contains the independent training run.
 
-- 1,063 RLS policies across 34 migrations
-- `tenant_id` derived server-side via `auth.uid()` → `user_organizations` lookup
-- Client **never** sends a `tenant_id` — even a compromised client cannot access another tenant's data
-
-**Lumière** (Admin-only writes):
-
-- Public data (services, portfolio) readable by `anon` role
-- CMS mutations restricted to users in the `admin_users` whitelist table
-- Contact submissions and orders only readable by admin
-
-### RBAC (BrightPath)
-
-99 RBAC-related files implementing a hierarchical role system:
-
-| Level | Role                    | Scope          |
-| ----- | ----------------------- | -------------- |
-| 0     | Platform Admin          | Full system    |
-| 10    | School Owner            | Tenant-wide    |
-| 20    | Principal               | Organization   |
-| 30    | Admin / Bursar          | Administrative |
-| 40    | Teacher / Class Teacher | Subject/Class  |
-| 80    | Parent                  | Child-scoped   |
-| 100   | Student                 | Self-scoped    |
-
-**Permission format**: `resource.action` (e.g., `students.view`, `grades.create`, `fees.manage`)
-
----
-
-## 3. Input Validation & Sanitization
-
-### Defense Against Injection
-
-| Attack Vector         | Mitigation                                                     | Used In             |
-| --------------------- | -------------------------------------------------------------- | ------------------- |
-| **SQL Injection**     | Parameterized queries (Prisma ORM / Supabase client)           | All projects        |
-| **XSS**               | React automatic escaping + DOMPurify + Content Security Policy | BrightPath, Lumière |
-| **CSRF**              | Next.js built-in CSRF tokens + SameSite cookies                | Lumière             |
-| **Command Injection** | No shell execution; all operations via ORM/SDK                 | All projects        |
-
-### Zod Schema Validation
-
-All API inputs are validated with Zod schemas before processing:
-
-```typescript
-// Example: Contact form validation (Lumière)
-const ContactSchema = z.object({
-  name: z.string().min(1).max(100),
-  email: z.string().email(),
-  company: z.string().max(100).optional(),
-  phone: z.string().max(20).optional(),
-  message: z.string().min(10).max(5000),
-  serviceInterested: z.string().optional(),
-});
-```
-
----
-
-## 4. Rate Limiting & Anti-Abuse
-
-```mermaid
-graph LR
-    Request["Incoming Request"] --> IPCheck{"IP Rate<br/>Check"}
-    IPCheck -->|"Exceeded"| Block429["429 Too Many Requests"]
-    IPCheck -->|"OK"| TokenCheck{"Token Rate<br/>Check"}
-    TokenCheck -->|"Exceeded"| Block429
-    TokenCheck -->|"OK"| Process["Process Request"]
-
-    style Block429 fill:#dc2626,color:#fff
-    style Process fill:#059669,color:#fff
-```
-
-| Control                  | BrightPath                      | Lumière                          |
-| ------------------------ | ------------------------------- | -------------------------------- |
-| **Login attempts**       | 5 fails → 15min lockout         | Supabase built-in                |
-| **API rate limiting**    | Per user + per IP               | IP + token on contact/newsletter |
-| **Webhook verification** | HMAC signature (M-Pesa, Stripe) | Stripe signature verification    |
-
----
-
-## 5. Data Protection & Compliance
-
-| Requirement               | BrightPath                                         | Lumière                            | Light Routines                    |
-| ------------------------- | -------------------------------------------------- | ---------------------------------- | --------------------------------- |
-| **Encryption at rest**    | PostgreSQL TDE + field-level PII encryption        | PostgreSQL (Supabase managed)      | SQLite (device-level encryption)  |
-| **Encryption in transit** | TLS 1.3                                            | TLS 1.3                            | TLS 1.3                           |
-| **Soft deletes**          | `deleted_at` columns                               | `deletedAt` columns                | N/A                               |
-| **Audit logging**         | `audit_logs` table (action, resource, changes, IP) | `ContentVersion` table (snapshots) | Session history with stop reasons |
-| **Data export**           | GDPR export edge function                          | N/A                                | User-initiated JSON export        |
-| **Right to erasure**      | GDPR delete edge function                          | N/A                                | Local data deletion               |
-| **Consent tracking**      | `data_processing_consents` table                   | N/A                                | Telemetry opt-in (OFF by default) |
-
-### Regulatory Coverage (BrightPath)
-
-| Regulation | Region           | Status         |
-| ---------- | ---------------- | -------------- |
-| **GDPR**   | EU/International | ✅ Implemented |
-| **POPIA**  | South Africa     | ✅ Implemented |
-| **NDPR**   | Nigeria          | ✅ Implemented |
-
----
-
-## 6. Security Headers & Transport
-
-| Header                      | Value                                 | Used In             |
-| --------------------------- | ------------------------------------- | ------------------- |
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | BrightPath, Lumière |
-| `Content-Security-Policy`   | Restrictive (no inline scripts)       | BrightPath          |
-| `X-Frame-Options`           | `DENY`                                | BrightPath, Lumière |
-| `X-Content-Type-Options`    | `nosniff`                             | BrightPath, Lumière |
-| `CORS`                      | Restricted to application origins     | Both web projects   |
-
----
-
-## 7. Secret Management
-
-| Practice                  | Implementation                                       |
-| ------------------------- | ---------------------------------------------------- |
-| **No secrets in code**    | All sensitive values in `.env` (git-ignored)         |
-| **Environment examples**  | `.env.example` with placeholder values               |
-| **Production injection**  | CI/CD environment variables (Vercel, GitHub Secrets) |
-| **Maintenance endpoints** | Protected by `SEED_SECRET_TOKEN`                     |
-| **Webhook verification**  | HMAC signatures for all payment webhooks             |
-
----
-
-<div align="center">
-
-[← Back to Portfolio](../README.md)
-
-</div>
+[← Security evidence](./README.md) · [All case studies](../../README.md)

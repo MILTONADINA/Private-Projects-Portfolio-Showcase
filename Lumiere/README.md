@@ -1,466 +1,63 @@
-<div align="center">
-
-# Lumière Digital Agency
-
-**Premium Full-Stack Agency Website with CMS Dashboard**
-
-[![Stack](https://img.shields.io/badge/Next.js_15-React_19-000000?style=flat-square&logo=nextdotjs)](https://nextjs.org)
-[![ORM](https://img.shields.io/badge/Prisma-PostgreSQL-2D3748?style=flat-square&logo=prisma)](https://prisma.io)
-[![i18n](https://img.shields.io/badge/i18n-EN_|_SW-10B981?style=flat-square)](https://next-intl-docs.vercel.app)
-
-</div>
-
----
-
-## The Problem
-
-A digital agency needs a premium, high-performance web presence that:
-
-- Serves content in **English and Swahili** for the East African market
-- Provides a **CMS dashboard** for non-technical team members to manage services, portfolio, team bios, blog posts, and client testimonials — without touching code
-- Handles **client inquiries and orders** with payment processing (Stripe)
-- Maintains **Grade A+ security** — the admin dashboard is a high-value attack target
-
----
-
-## The Solution
-
-A monolithic Next.js 15 application leveraging the App Router for both the public-facing website and the internal admin dashboard. React Server Components (RSC) handle data fetching; Client Components hydrate only for interactive elements.
+# Lumière
 
-### Tech Stack
+**Client engagement: bilingual agency content, CMS and checkout**
 
-| Layer          | Technology                         | Rationale                                 |
-| -------------- | ---------------------------------- | ----------------------------------------- |
-| **Framework**  | Next.js 15 (App Router)            | SSR/ISR, API Routes, asset optimization   |
-| **UI**         | React 19, Tailwind CSS             | Server Components + utility-first styling |
-| **Animations** | Framer Motion                      | Smooth, performant micro-animations       |
-| **ORM**        | Prisma                             | Type-safe schema, migration management    |
-| **Database**   | PostgreSQL (Supabase)              | Relational data + RLS enforcement         |
-| **Auth**       | Supabase Auth                      | JWT-based with admin whitelist            |
-| **Payments**   | Stripe                             | Secure checkout, payment intents          |
-| **i18n**       | next-intl                          | Route-based locale switching (EN/SW)      |
-| **Monitoring** | Sentry (client + server + edge)    | Full-stack error tracking                 |
-| **Security**   | Zod, DOMPurify, RLS, rate limiting | Defense-in-depth                          |
-
----
-
-## System Architecture
-
-```mermaid
-graph TB
-    subgraph Client["Public Website"]
-        Home["Home Page<br/>RSC + Framer Motion"]
-        Services["Services Page<br/>RSC → Prisma"]
-        Portfolio["Portfolio Page<br/>RSC → Prisma"]
-        Blog["Blog<br/>RSC → Prisma"]
-        Contact["Contact Form<br/>Client Component"]
-    end
-
-    subgraph Admin["Admin Dashboard (Protected)"]
-        AdminDash["Dashboard Home"]
-        SvcMgr["Service Manager<br/>CRUD + Translations"]
-        PortMgr["Portfolio Manager<br/>CRUD + Translations"]
-        TeamMgr["Team Manager"]
-        BlogMgr["Blog Editor<br/>Draft → Published"]
-        OrderMgr["Order Tracker"]
-        ContactMgr["Submissions Inbox"]
-    end
-
-    subgraph Middleware["Next.js Middleware"]
-        I18n["Locale Detection<br/>/en vs /sw"]
-        AuthGuard["Admin Auth Guard<br/>Supabase Session Check"]
-    end
-
-    subgraph Backend["Backend Layer"]
-        API["API Routes<br/>POST/PUT/DELETE"]
-        Prisma["Prisma ORM<br/>Type-Safe Queries"]
-        Validation["Zod Validation<br/>All Inputs"]
-        RateLimit["Rate Limiter<br/>IP + Token"]
-    end
-
-    subgraph Database["Data Layer"]
-        PG["PostgreSQL<br/>14 Models"]
-        RLS["Row-Level Security<br/>Read/Write Policies"]
-        Supa["Supabase Auth<br/>JWT + Admin Whitelist"]
-    end
-
-    subgraph External["External Services"]
-        Stripe["Stripe<br/>Payment Processing"]
-        Mail["Nodemailer<br/>Email Notifications"]
-        SentryExt["Sentry<br/>Error Monitoring"]
-    end
-
-    Client -->|"GET requests"| Middleware
-    Admin -->|"All requests"| Middleware
-    Middleware --> I18n & AuthGuard
-    I18n --> Client
-    AuthGuard -->|"Unauthenticated"| Admin
-
-    Client -->|"RSC data fetch"| Prisma
-    Admin -->|"Mutations"| API
-    API --> Validation --> RateLimit --> Prisma --> PG
-    PG --> RLS
-    Supa --> RLS
-
-    API --> Stripe & Mail
-    Client & Admin -.-> SentryExt
-```
-
----
-
-## Data Model
-
-The Prisma schema defines **14 models** with a consistent **translation pattern** — each content entity has a companion `*Translation` table keyed on `[entityId, locale]`.
-
-### Entity Relationship Diagram
-
-```mermaid
-erDiagram
-    SERVICE ||--o{ SERVICE_TRANSLATION : "translated to"
-    SERVICE ||--o{ SERVICE_PACKAGE : "offers"
-    SERVICE ||--o{ PORTFOLIO_ITEM_SERVICE : "showcased in"
-
-    SERVICE_PACKAGE ||--o{ SERVICE_PACKAGE_TRANSLATION : "translated to"
-    SERVICE_PACKAGE ||--o{ ORDER : "ordered as"
-
-    PORTFOLIO_ITEM ||--o{ PORTFOLIO_ITEM_TRANSLATION : "translated to"
-    PORTFOLIO_ITEM ||--o{ PORTFOLIO_ITEM_SERVICE : "uses"
-
-    BLOG_POST ||--o{ BLOG_POST_TRANSLATION : "translated to"
-
-    SERVICE {
-        cuid id PK
-        string slug "unique"
-        decimal basePrice
-        string currency "USD"
-        int sortOrder
-        boolean active
-        datetime deletedAt "soft delete"
-    }
-
-    SERVICE_TRANSLATION {
-        cuid id PK
-        string serviceId FK
-        string locale "en | sw"
-        string title
-        string shortDescription
-        string longDescription
-    }
-
-    SERVICE_PACKAGE {
-        cuid id PK
-        string slug "unique"
-        string serviceId FK
-        decimal basePrice
-        boolean active
-    }
-
-    PORTFOLIO_ITEM {
-        cuid id PK
-        string slug "unique"
-        string clientName
-        string industry
-        string imageUrl
-    }
-
-    PORTFOLIO_ITEM_TRANSLATION {
-        cuid id PK
-        string portfolioItemId FK
-        string locale "en | sw"
-        string title
-        string challenge
-        string solution
-        string results
-    }
-
-    BLOG_POST {
-        cuid id PK
-        string slug "unique"
-        string status "draft | published"
-        string category
-        string authorName
-        datetime publishedAt
-    }
-
-    ORDER {
-        cuid id PK
-        string servicePackageId FK
-        string customerName
-        string customerEmail
-        decimal amount
-        string paymentProvider "stripe"
-        string status "pending | paid"
-    }
-
-    TESTIMONIAL {
-        cuid id PK
-        string clientName
-        string quote
-        string locale "en | sw"
-        boolean active
-    }
-
-    TEAM_MEMBER {
-        cuid id PK
-        string name
-        string role
-        string bio
-        int sortOrder
-    }
-
-    CONTACT_SUBMISSION {
-        cuid id PK
-        string name
-        string email
-        string message
-        string status "new | read | replied"
-    }
-
-    ADMIN_USER {
-        uuid user_id PK
-        datetime created_at
-    }
-
-    CONTENT_VERSION {
-        cuid id PK
-        string entityType
-        string entityId
-        json snapshot "full entity state"
-    }
-
-    NEWSLETTER_SUBSCRIPTION {
-        cuid id PK
-        string email "unique"
-        boolean active
-    }
-
-    CLIENT_LOGO {
-        cuid id PK
-        string name
-        string imageUrl
-        int sortOrder
-    }
-```
-
----
-
-## Key Engineering Decision: Translation Pattern
-
-**Decision**: Use dedicated `*Translation` tables instead of JSON columns or duplicate records per locale.
-
-**Why?**
-
-- **Type-safe queries**: Prisma generates typed models for each translation table. TypeScript catches missing translations at compile time.
-- **Database-level constraints**: `@@unique([serviceId, locale])` prevents duplicate translations per entity/locale pair — enforced at PostgreSQL level.
-- **Clean joins**: Loading a service in Swahili is a single Prisma `include` with a `where` clause on locale, not a JSONB extraction or full-table scan.
-- **Indexed lookups**: Separate `@@index([locale])` on each translation table — locale filtering is O(log n).
-
-```typescript
-// Example: Fetch service with Swahili translation
-const service = await prisma.service.findUnique({
-  where: { slug: "web-development" },
-  include: {
-    translations: {
-      where: { locale: "sw" },
-    },
-    packages: {
-      include: {
-        translations: { where: { locale: "sw" } },
-      },
-    },
-  },
-});
-```
-
----
-
-## Key Engineering Decision: Next.js Server Components Architecture
-
-**Decision**: Use React Server Components (RSC) for all data-fetching pages; Client Components only for interactive elements.
-
-```mermaid
-graph LR
-    subgraph RSC["Server Components (Zero JS)"]
-        ServicesPage["Services Page"]
-        PortfolioPage["Portfolio Page"]
-        BlogPage["Blog Listing"]
-        TeamSection["Team Section"]
-    end
-
-    subgraph CC["Client Components (Hydrated)"]
-        ContactForm["Contact Form<br/>+ Zod Validation"]
-        Carousel["Image Carousel<br/>+ Framer Motion"]
-        ThemeToggle["Dark/Light Toggle"]
-        AdminForms["Admin CRUD Forms"]
-    end
-
-    RSC -->|"include client islands"| CC
-    RSC -->|"Direct DB access"| Prisma["Prisma ORM"]
-    CC -->|"API mutations"| APIRoutes["API Routes<br/>POST/PUT/DELETE"]
-
-    style RSC fill:#0891b2,color:#fff
-    style CC fill:#7c3aed,color:#fff
-```
-
-**Why?**
-
-- **Performance**: Public pages ship zero JavaScript for data-fetching logic. Prisma queries run on the server — no client-side waterfall.
-- **Security**: Database credentials never reach the browser. Admin mutations go through API routes with `requireAdmin()` guards.
-- **SEO**: Full SSR output — search engines get complete HTML without waiting for JavaScript hydration.
-
----
-
-## App Router Route Map
-
-```mermaid
-graph LR
-    subgraph Public["Public site — /[locale]/* (40 pages total)"]
-        P_Root["/<br/>(home — RSC)"]
-        P_About["/about"]
-        P_Services["/services"]
-        P_Portfolio["/portfolio<br/>/portfolio/[slug]"]
-        P_Packages["/packages/[slug]"]
-        P_Blog["/blog<br/>/blog/[slug]"]
-        P_Contact["/contact<br/>(client component)"]
-        P_Thanks["/thank-you<br/>/checkout/cancel"]
-    end
-
-    subgraph AdminGroup["Admin dashboard — /admin/(dashboard)/*"]
-        A_Home["/admin<br/>(dashboard home)"]
-        A_Services["/admin/services<br/>+ /services/packages"]
-        A_Portfolio["/admin/portfolio"]
-        A_Posts["/admin/posts"]
-        A_Team["/admin/branding/team"]
-        A_Logos["/admin/branding/logos"]
-        A_Test["/admin/testimonials"]
-        A_Inbox["/admin/inbox/contacts<br/>+ /inbox/orders"]
-        A_Trash["/admin/trash"]
-        A_Login["/admin/login<br/>(no layout)"]
-    end
-
-    subgraph APIPublic["Public API"]
-        API_Contact["POST /api/contact<br/>(rate-limited)"]
-        API_News["POST /api/newsletter<br/>(rate-limited)"]
-        API_Checkout["POST /api/checkout<br/>(Stripe)<br/>(rate-limited)"]
-        API_Auth["GET /api/auth/callback<br/>(Supabase)"]
-        API_Hook["POST /api/webhooks/stripe<br/>(HMAC-verified)"]
-    end
-
-    subgraph APIAdmin["Admin API — Supabase-gated"]
-        API_AdmCRUD["/api/admin/{services, posts,<br/>portfolio, team, logos,<br/>testimonials, history, trash}<br/>(CRUD)"]
-    end
-
-    Public --> APIPublic
-    AdminGroup --> APIAdmin
-    P_Checkout["/checkout"] --> API_Checkout
-    API_Checkout --> API_Hook
-
-    style Public fill:#0891b2,color:#fff
-    style AdminGroup fill:#dc2626,color:#fff
-    style APIPublic fill:#059669,color:#fff
-    style APIAdmin fill:#7c3aed,color:#fff
-```
-
-- **40 `page.tsx` files** across the public + admin trees (counted in the real source).
-- **25 `route.ts` API endpoints** — 17 admin CRUD, 8 public (auth callback, checkout, contact, newsletter, Stripe webhook, history-revert, seed, migrate).
-- Admin routes use **route groups `(dashboard)`** so they share a layout but the URL stays `/admin/<feature>`.
-- Public routes use **dynamic segment `[locale]`** for next-intl URL-based localization.
-
----
-
-## Internationalization (i18n)
-
-Fully bilingual (English + Swahili) implementation using `next-intl`:
-
-| Concern             | Implementation                                              |
-| ------------------- | ----------------------------------------------------------- |
-| **URL structure**   | Locale prefix: `/en/services` vs `/sw/services`             |
-| **Middleware**      | Auto-detects browser locale, redirects to `/en` or `/sw`    |
-| **Static strings**  | `messages/en.json` (6.3 KB) and `messages/sw.json` (8.5 KB) |
-| **Dynamic content** | Database translations via `*Translation` tables             |
-| **Admin dashboard** | Not localized (English-only internal tool)                  |
-
----
-
-## Security Architecture
-
-```mermaid
-graph TB
-    Request["Incoming Request"] --> MW["Middleware"]
-
-    MW -->|"Public route"| I18n["i18n Locale Routing"]
-    MW -->|"/admin/*"| AuthCheck{"Supabase<br/>Session?"}
-
-    AuthCheck -->|"No session"| LoginRedirect["→ /admin/login"]
-    AuthCheck -->|"Valid session"| AdminWhitelist{"User in<br/>admin_users?"}
-
-    AdminWhitelist -->|"No"| AccessDenied["403 Forbidden"]
-    AdminWhitelist -->|"Yes"| APIRoute["API Route Handler"]
-
-    APIRoute --> ZodValidation["Zod Input Validation"]
-    ZodValidation -->|"Invalid"| Error400["400 Bad Request"]
-    ZodValidation -->|"Valid"| RateLimiter["Rate Limiter<br/>IP + Token"]
-    RateLimiter -->|"Exceeded"| Error429["429 Too Many Requests"]
-    RateLimiter -->|"OK"| DOMPurify["DOMPurify<br/>XSS Sanitization"]
-    DOMPurify --> Prisma["Prisma ORM"]
-    Prisma --> RLS["PostgreSQL RLS<br/>Row-Level Policies"]
-
-    style AuthCheck fill:#dc2626,color:#fff
-    style ZodValidation fill:#ea580c,color:#fff
-    style RateLimiter fill:#d97706,color:#fff
-    style RLS fill:#059669,color:#fff
-```
-
-**Defense-in-depth layers:**
-
-1. **Middleware**: Session validation + admin route protection
-2. **Admin whitelist**: `admin_users` table — only whitelisted user IDs can access the dashboard
-3. **Zod validation**: Schema-validated inputs on every API endpoint
-4. **Rate limiting**: IP + token-based rate limiter on contact and newsletter endpoints
-5. **DOMPurify**: HTML sanitization for any rich-text content
-6. **RLS**: PostgreSQL Row-Level Security policies block unauthorized reads/writes at the database level
-
----
-
-## Content Versioning
-
-The `ContentVersion` model provides an **audit trail** for CMS content:
-
-| Field        | Purpose                                                                               |
-| ------------ | ------------------------------------------------------------------------------------- |
-| `entityType` | Which model was changed (`blog_post`, `service`, `portfolio_item`, `service_package`) |
-| `entityId`   | The specific record ID                                                                |
-| `snapshot`   | Full JSON snapshot of the entity state at that point in time                          |
-| `createdAt`  | When the version was created                                                          |
-
-This enables content rollback and change tracking without a full revision system.
-
----
-
-## Live Rendering — Public Home Page
-
-![Lumière — `/en` home page rendered by Next.js 16 (real SSR capture via headless Chromium, 2026-05-28)](./lumiere-home.png)
-
-> Captured against a fresh `next dev` build on 2026-05-28. The Server Component render reaches the page in ~14 s on a cold start (Turbopack); subsequent navigations are sub-second. The home page is composed of an RSC hero section + statically-bundled "About / Services / Our Work / CTA" segments — no client-side data fetch on first paint.
-
-## Validation
-
-![Lumière Unit Tests — 5 passed, 0 failed](./lumiere-smoke-check.png)
-
----
-
-<div align="center">
-
-[← Back to Portfolio](../README.md)
-
-</div>
-
----
-
-## In this folder
-<!-- in-this-folder -->
-
-Everything documenting this project lives here:
-
-- [`lumiere-home.png`](./lumiere-home.png) — 🖼️ test-run screenshot
-- [`lumiere-smoke-check.png`](./lumiere-smoke-check.png) — 🖼️ test-run screenshot
+**My role:** Full-Stack Developer. **Period:** December 2025 to February 2026. **Source:** Private.
+
+## Client problem and deliverables
+
+A digital agency needed English/Swahili content, a way for staff to maintain services and portfolio material, and customer inquiry/order handling. I implemented the Next.js application, localized content model, staff administration and Stripe checkout integration.
+
+The work includes public content pages, admin API handlers with identity and membership checks, content history and order/payment references. This case describes those responsibilities and decisions without publishing the client's interface, content, route inventory or database schema.
+
+**Technology:** Next.js 16, React 19, TypeScript, Prisma, Supabase, Tailwind CSS and Stripe.
+
+## Conceptual workflow
+
+![Conceptual localized-content, staff authorization and checkout workflows](./evidence/lumiere-cms-concept.png)
+
+This diagram explains the interaction boundaries; it does not reproduce the client's screens or internal schema.
+
+## Engineering decisions
+
+### Store translations with explicit identity and locale
+
+Localized entities use companion translation records keyed by entity and locale. A database uniqueness constraint prevents duplicate translations for the same pair. Prisma provides typed query/result shapes, while missing translations remain a runtime concern.
+
+The public application uses locale-prefixed routing. Server Components fetch content; client components handle forms and other interactions. This keeps the rendering and interaction responsibilities clear without relying on a client-side fetch for every content view.
+
+### Authorize staff changes on the server
+
+Admin API handlers verify the authenticated Supabase user and admin membership before writing through Prisma. The application check sits beside the operation it protects. Database row policies are a separate boundary whose effect depends on the connection's role and request context.
+
+Input schemas validate accepted fields, and rich-text sanitization handles content that may contain markup. These controls are applied at the relevant request/content boundaries rather than asserted as universal protection.
+
+### Keep order creation connected to checkout
+
+The checkout handler validates the request, resolves the selected package, creates an order and opens a Stripe Checkout session. Saving the provider session reference connects the payment workflow back to the order. The webhook handler uses Stripe signature verification.
+
+Contact, newsletter and checkout handlers use process-local IP-based limits. These limits manage requests within the application process; they are not described as distributed rate limiting.
+
+### Make content changes traceable
+
+Application-level content history records earlier states so staff can review changes and restore selected content types and translations. Editorial handlers also manage draft/published state and request cache revalidation. A selected update path keeps a content record, its translations and associations within a transaction. These are CMS features, not an immutable security audit log or a claim that every rollback is atomic.
+
+### Handle inquiries and repeat signups
+
+Contact handling stores the inquiry before attempting staff notification and customer confirmation. Notification errors are handled separately, so a stored inquiry is not a guarantee of email delivery. Newsletter signup returns success for an existing address and handles a concurrent uniqueness conflict without creating a second subscription.
+
+## Focused utility verification
+
+On **October 1, 2026**, **nine offline utility checks passed with no failures**: the five existing sanitization/rate-limit checks plus four focused boundary checks. The latter cover quota exhaustion and identifier separation, expired-window reset, HTTP refusal before a handler runs, and successful response/status/header preservation.
+
+The checks used the current private-source revision in an isolated checkout. A harness only released the recurring cleanup timers' process handles so the test process could exit; limiter and sanitizer logic were unchanged. These checks do not exercise live authentication, database writes, payments, email or deployment.
+
+## Historical validation
+
+The original smoke summary contains **five passing checks and 0 failures**: three sanitization checks and two rate-limit checks. The artifact was committed **February 25, 2026**; an execution timestamp is not recorded.
+
+![Original sanitization and rate-limit smoke summary: five checks passed and 0 failed; artifact committed February 25, 2026](./lumiere-smoke-check.png)
+
+This unchanged image preserves a narrow historical check. The conceptual workflow above provides separate implementation context; it is not another test run or a client product screen.
+
+[← All case studies](../README.md)

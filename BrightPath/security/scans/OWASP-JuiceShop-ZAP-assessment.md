@@ -1,11 +1,11 @@
-# DAST Assessment — OWASP ZAP Baseline against OWASP Juice Shop
+# DAST Assessment - OWASP ZAP Baseline against OWASP Juice Shop
 
 > **What this is.** A real Dynamic Application Security Testing (DAST) run performed with **OWASP ZAP**
-> against **OWASP Juice Shop** — the OWASP Foundation's *intentionally vulnerable* training
+> against **OWASP Juice Shop** - the OWASP Foundation's *intentionally vulnerable* training
 > application, which exists so engineers can practice scanning and triage on a legal, safe target.
 > **No client or third-party systems were scanned.** This artifact demonstrates the workflow,
-> tooling, and triage/remediation reasoning — the same shift-left checks I wire into my projects'
-> CI/CD.
+> tooling, finding triage, and proposed mitigations. It does not establish that client applications
+> were scanned or that the proposals were deployed and retested.
 >
 > **Tool:** OWASP ZAP `zap-baseline.py` (passive rules + spider), image `ghcr.io/zaproxy/zaproxy:stable`
 > **Target:** `bkimminich/juice-shop` (Docker, 158 URLs crawled) · **Date:** 2026-05-30 (UTC)
@@ -13,8 +13,8 @@
 > **Raw output (verbatim, in this folder):** [`zap.json`](./zap.json) · [`zap.html`](./zap.html) · [`zap.md`](./zap.md)
 >
 > Every count and finding name below is taken directly from `zap.json`. The baseline profile runs
-> ZAP's **passive** rules plus a spider — it flags configuration/header weaknesses without firing
-> active attack payloads, so it is safe to run in CI on every build.
+> ZAP's **passive** rules plus a spider - it flags configuration/header weaknesses without firing
+> active attack payloads. This run targeted an authorized local Docker training application.
 
 ---
 
@@ -30,22 +30,23 @@ The baseline scan raised **10 distinct alerts** across 158 crawled URLs:
 | Informational | 3 |
 | **Total** | **10** |
 
-## Medium-risk findings — triage & remediation
+## Medium-risk findings - triage & proposed remediation
 
-### 1. Content Security Policy (CSP) Header Not Set — CWE-693 · 5 instances
+### 1. Content Security Policy (CSP) Header Not Set - CWE-693 · 5 instances
 **Risk.** Without a `Content-Security-Policy` header the browser will load scripts/styles from any
 origin, removing a key defense-in-depth layer against cross-site scripting (XSS) and data injection.
 **Remediation.** Send a restrictive CSP, e.g.
 `default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'`.
-Roll out in `Content-Security-Policy-Report-Only` first, review violations, then enforce. I apply CSP
-at the edge/middleware layer.
+Roll out in `Content-Security-Policy-Report-Only` first, review violations, then enforce at the
+application or edge layer. No remediation deployment or clean rescan is recorded in these artifacts.
 
-### 2. Cross-Domain Misconfiguration — CWE-264 · 5 instances
+### 2. Cross-Domain Misconfiguration - CWE-264 · 5 instances
 **Risk.** A permissive Cross-Origin Resource Sharing (CORS) response lets other origins read
 responses, enabling cross-origin data theft when paired with credentialed requests.
 **Remediation.** Replace any wildcard/over-broad `Access-Control-Allow-Origin` with an explicit
-allow-list of trusted origins; never combine `Allow-Origin: *` with `Allow-Credentials: true`. (My
-Internet Applications project hardened CORS for exactly this reason.)
+allow-list of trusted origins. Review credential handling and which responses are intentionally
+public; browsers reject a wildcard origin for credentialed CORS, so actual exploitability needs
+endpoint-specific verification.
 
 ## Low-risk findings (5)
 
@@ -68,7 +69,7 @@ DOM APIs.
 | Finding | CWE | Instances |
 |---------|-----|----------:|
 | Storable but Non-Cacheable Content | CWE-524 | 5 |
-| Modern Web Application | — | 5 |
+| Modern Web Application | - | 5 |
 | Storable and Cacheable Content | CWE-524 | 1 |
 
 **Notes.** "Modern Web Application" is an informational fingerprint (SPA detected), not a defect.
@@ -78,17 +79,16 @@ attached [`zap.html`](./zap.html) and [`zap.json`](./zap.json).
 
 ## How this maps to my own engineering
 
-The same classes of check run automatically, shift-left, in my private projects' CI/CD:
+This exercise complements the repository's other security evidence:
 
-- **OWASP ZAP baseline** — DAST on deployed previews (this report demonstrates the technique).
-- **Semgrep** — Static Application Security Testing (SAST) on every pull request.
-- **gitleaks** — secret scanning.
-- **CycloneDX SBOM + dependency CVE auditing** — supply-chain visibility.
+- **OWASP ZAP baseline** - the local Juice Shop scan documented here.
+- **Semgrep** and **gitleaks** - control families explained in the [application-security patterns](../patterns.md).
+- **CycloneDX SBOM + dependency auditing** - component inventory and dependency-review practices described in those patterns.
 
-Header/CSP/CORS hardening of the kind recommended here is applied at the edge/middleware layer. See
+The mitigation discussion is a triage artifact, not a record of resolved vulnerabilities. See
 the companion [STRIDE threat model](../threat-models/BrightPath-STRIDE-threat-model.md) for the
-design-level controls (JWT-derived tenant scope, PostgreSQL Row-Level Security, append-only audit
-log, HMAC-verified webhooks).
+design-level controls and their limits, including server-derived tenant scope and the distinction
+between RLS-enforced database roles and backend connections that bypass RLS.
 
 ---
 *Methodology: OWASP ZAP baseline scan (passive rules + spider) against OWASP Juice Shop in Docker.
